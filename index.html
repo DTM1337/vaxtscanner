@@ -5,456 +5,304 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plant Scan</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=Nunito:wght@800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #080808;
     --cream: #f0e8a8;
-    --green: #2d4a2d;
-    --green-mid: #3d6b3d;
     --text: rgba(240,232,168,0.6);
     --border: rgba(240,232,168,0.1);
     --card: #0f0f0f;
   }
-
   html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-serif; min-height: 100vh; overflow-x: hidden; }
 
-  body {
+  /* ── AUTH OVERLAY ── */
+  .auth-overlay {
+    position: fixed; inset: 0; z-index: 200;
     background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-overlay.hidden { display: none; }
+  .auth-box {
+    width: 100%; max-width: 400px;
+    background: #0f0f0f;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 36px 32px;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .auth-logo img {
+    width: 80px;
+    margin-bottom: 8px;
+  }
+  .auth-logo-text {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--cream);
+  }
+
+  .auth-tabs {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .auth-tab {
+    flex: 1; padding: 11px;
+    background: none; border: none;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .auth-tab.active { background: var(--cream); color: #080808; font-weight: 700; }
+
+  .auth-form { display: flex; flex-direction: column; gap: 12px; }
+  .auth-input {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
     color: var(--cream);
     font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .auth-input:focus { border-color: rgba(240,232,168,0.3); }
+  .auth-input::placeholder { color: rgba(240,232,168,0.25); }
+
+  .auth-btn {
+    background: var(--cream);
+    color: #080808;
+    border: none;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 4px;
+  }
+  .auth-btn:hover { background: #fff8c0; transform: translateY(-1px); }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .auth-divider {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--text); font-size: 12px; opacity: 0.5;
+    margin: 4px 0;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .google-btn {
+    background: #0a0a0a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%;
+  }
+  .google-btn:hover { border-color: rgba(240,232,168,0.25); background: #111; }
+
+  .auth-error {
+    background: rgba(180,40,40,0.08);
+    border: 1px solid rgba(180,40,40,0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #ffaaaa;
+    font-size: 12px;
+    display: none;
+  }
+  .auth-success {
+    background: rgba(74,222,128,0.08);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #86efac;
+    font-size: 12px;
+    display: none;
+    text-align: center;
   }
 
   /* ── HERO ── */
   .hero {
     min-height: 100svh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    display: flex; flex-direction: column; justify-content: space-between;
     padding: 28px 24px 32px;
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
   }
-
-  .hero-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 10px;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .hero-logo {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 13px;
-    color: var(--cream);
-    letter-spacing: 0.5px;
-  }
-
-  .hero-date { opacity: 0.5; font-size: 10px; letter-spacing: 2px; }
-
-  .hero-center {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 40px 0 20px;
-    position: relative;
-  }
-
-  .hero-eyebrow {
-    font-size: 10px;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    color: var(--text);
-    margin-bottom: 16px;
-    font-family: 'DM Sans', sans-serif;
-  }
-
-  .hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(56px, 14vw, 92px);
-    font-weight: 300;
-    line-height: 0.92;
-    color: var(--cream);
-    margin-bottom: 6px;
-    letter-spacing: -1px;
-  }
-
-  .hero-title em {
-    font-style: italic;
-    font-weight: 300;
-  }
-
-  .hero-title .bold {
-    font-weight: 600;
-  }
-
-  .hero-sub {
-    font-size: 13px;
-    color: var(--text);
-    max-width: 260px;
-    line-height: 1.6;
-    margin-top: 20px;
-    margin-bottom: 32px;
-    font-weight: 300;
-  }
-
-  .hero-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    background: var(--cream);
-    color: #080808;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 13px;
-    padding: 16px 28px;
-    border-radius: 100px;
-    border: none;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: all 0.25s;
-    text-decoration: none;
-    width: fit-content;
-  }
-
+  .hero-top { display: flex; justify-content: space-between; align-items: center; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text); position: relative; z-index: 1; }
+  .hero-logo { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px; color: var(--cream); }
+  .hero-center { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px 0 20px; position: relative; z-index: 1; }
+  .hero-eyebrow { font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: var(--text); margin-bottom: 16px; }
+  .hero-title { font-family: 'Cormorant Garamond', serif; font-size: clamp(56px, 14vw, 92px); font-weight: 300; line-height: 0.92; color: var(--cream); letter-spacing: -1px; margin-bottom: 6px; }
+  .hero-title em { font-style: italic; }
+  .hero-title .bold { font-weight: 600; }
+  .hero-sub { font-size: 13px; color: var(--text); max-width: 260px; line-height: 1.6; margin-top: 20px; margin-bottom: 32px; font-weight: 300; }
+  .hero-cta { display: inline-flex; align-items: center; gap: 12px; background: var(--cream); color: #080808; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 13px; padding: 16px 28px; border-radius: 100px; border: none; cursor: pointer; transition: all 0.25s; text-decoration: none; width: fit-content; }
   .hero-cta:hover { background: #fff8c0; transform: translateY(-2px); }
-  .hero-cta .arrow { font-size: 16px; transition: transform 0.2s; }
-  .hero-cta:hover .arrow { transform: translateX(4px); }
-
-  .hero-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    color: var(--text);
-    opacity: 0.4;
-  }
-
-  /* Decorative circles */
-  .deco-ring {
-    position: absolute;
-    border: 1px solid rgba(240,232,168,0.06);
-    border-radius: 50%;
-    pointer-events: none;
-  }
+  .hero-bottom { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: 1.5px; color: var(--text); opacity: 0.4; position: relative; z-index: 1; }
+  .deco-ring { position: absolute; border: 1px solid rgba(240,232,168,0.06); border-radius: 50%; pointer-events: none; }
   .ring-1 { width: 320px; height: 320px; top: -80px; right: -120px; }
   .ring-2 { width: 180px; height: 180px; top: 30px; right: -30px; }
   .ring-3 { width: 500px; height: 500px; bottom: -200px; left: -200px; }
 
-  /* ── NAV BAR ── */
-  .app-nav {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: rgba(8,8,8,0.95);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-  }
-
-  .nav-btn {
-    flex: 1;
-    padding: 17px;
-    background: none;
-    border: none;
-    color: var(--cream);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    opacity: 0.4;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
-  }
+  /* ── APP NAV ── */
+  .app-nav { position: sticky; top: 0; z-index: 50; background: rgba(8,8,8,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; }
+  .nav-btn { flex: 1; padding: 17px; background: none; border: none; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; opacity: 0.4; transition: all 0.2s; border-bottom: 2px solid transparent; }
   .nav-btn.active { opacity: 1; border-bottom-color: var(--cream); }
+
+  /* User menu */
+  .user-menu { position: relative; }
+  .user-btn { background: none; border: 1px solid var(--border); color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 8px 14px; border-radius: 100px; cursor: pointer; opacity: 0.7; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+  .user-btn:hover { opacity: 1; border-color: rgba(240,232,168,0.3); }
+  .user-dropdown { position: absolute; right: 0; top: calc(100% + 8px); background: #111; border: 1px solid var(--border); border-radius: 14px; padding: 6px; min-width: 160px; display: none; z-index: 100; }
+  .user-dropdown.open { display: block; }
+  .user-dropdown-item { padding: 10px 14px; font-size: 13px; color: var(--text); cursor: pointer; border-radius: 8px; transition: background 0.15s; }
+  .user-dropdown-item:hover { background: rgba(240,232,168,0.06); color: var(--cream); }
+  .user-dropdown-item.danger { color: #ffaaaa; }
 
   /* ── PAGES ── */
   .page { display: none; max-width: 480px; margin: 0 auto; padding: 36px 24px 100px; }
   .page.active { display: block; }
 
-  /* ── SCAN PAGE ── */
-  .scan-header { margin-bottom: 28px; }
-  .scan-eyebrow {
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--text);
-    opacity: 0.5;
-    margin-bottom: 8px;
-  }
-  .scan-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 40px;
-    font-weight: 300;
-    color: var(--cream);
-    line-height: 1.05;
-    letter-spacing: -0.5px;
-  }
+  /* SCAN */
+  .scan-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-bottom: 8px; }
+  .scan-title { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; color: var(--cream); line-height: 1.05; letter-spacing: -0.5px; margin-bottom: 28px; }
   .scan-title em { font-style: italic; }
 
-  /* UPLOAD */
-  .upload {
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 48px 24px;
-    text-align: center;
-    cursor: pointer;
-    margin-bottom: 14px;
-    transition: all 0.25s;
-    background: var(--card);
-    position: relative;
-    overflow: hidden;
-  }
-  .upload::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, rgba(240,232,168,0.04) 0%, transparent 70%);
-    pointer-events: none;
-  }
+  .upload { border: 1px solid var(--border); border-radius: 20px; padding: 48px 24px; text-align: center; cursor: pointer; margin-bottom: 14px; transition: all 0.25s; background: var(--card); position: relative; overflow: hidden; }
+  .upload::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(240,232,168,0.04) 0%, transparent 70%); pointer-events: none; }
   .upload:hover { border-color: rgba(240,232,168,0.25); }
   .upload.filled { padding: 0; border-color: rgba(240,232,168,0.2); }
   .upload img { width: 100%; border-radius: 18px; display: block; max-height: 320px; object-fit: cover; }
-  .upload-emoji { font-size: 44px; margin-bottom: 14px; display: block; filter: grayscale(0.3); }
-  .upload-text {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 400;
-    color: var(--cream);
-    opacity: 0.8;
-    margin-bottom: 6px;
-  }
+  .upload-emoji { font-size: 44px; margin-bottom: 14px; display: block; }
+  .upload-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); opacity: 0.8; margin-bottom: 6px; }
   .upload-sub { font-size: 11px; color: var(--cream); opacity: 0.3; letter-spacing: 1px; text-transform: uppercase; }
-  .change-btn {
-    position: absolute; bottom: 12px; right: 12px;
-    background: rgba(8,8,8,0.9);
-    border: 1px solid var(--border);
-    color: var(--cream);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    font-size: 11px;
-    padding: 6px 14px;
-    border-radius: 100px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-  }
+  .change-btn { position: absolute; bottom: 12px; right: 12px; background: rgba(8,8,8,0.9); border: 1px solid var(--border); color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 6px 14px; border-radius: 100px; cursor: pointer; }
 
-  /* BUTTONS */
   .btn-row { display: flex; gap: 10px; margin-bottom: 24px; }
-  .btn {
-    flex: 1; padding: 15px 12px;
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    background: var(--card);
-    color: var(--cream);
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    transition: all 0.2s;
-    opacity: 0.7;
-  }
+  .btn { flex: 1; padding: 15px 12px; border-radius: 14px; border: 1px solid var(--border); background: var(--card); color: var(--cream); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: 13px; transition: all 0.2s; opacity: 0.7; }
   .btn:hover { border-color: rgba(240,232,168,0.25); opacity: 1; }
-  .btn-primary {
-    flex: 1.4;
-    background: var(--cream);
-    color: #080808;
-    border: none;
-    font-weight: 700;
-    font-family: 'DM Sans', sans-serif;
-    border-radius: 14px;
-    padding: 15px;
-    cursor: pointer;
-    font-size: 13px;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-  }
+  .btn-primary { flex: 1.4; background: var(--cream); color: #080808; border: none; font-weight: 700; font-family: 'DM Sans', sans-serif; border-radius: 14px; padding: 15px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
   .btn-primary:hover:not(:disabled) { background: #fff8c0; transform: translateY(-1px); }
   .btn-primary:disabled { background: #1e1e0e; color: var(--cream); opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  /* LOADING */
-  .spinner-wrap {
-    text-align: center; padding: 40px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    margin-bottom: 16px;
-  }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 1.5px solid var(--border);
-    border-top-color: var(--cream);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 14px;
-  }
+  .spinner-wrap { text-align: center; padding: 40px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 16px; }
+  .spinner { width: 36px; height: 36px; border: 1.5px solid var(--border); border-top-color: var(--cream); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 14px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-weight: 300;
-    color: var(--cream);
-    margin-bottom: 6px;
-  }
+  .loading-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--cream); margin-bottom: 6px; }
   .loading-sub { font-size: 11px; color: var(--text); opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; }
 
-  /* ERROR */
-  .error-box {
-    background: rgba(180,40,40,0.07);
-    border: 1px solid rgba(180,40,40,0.2);
-    border-radius: 16px;
-    padding: 16px 18px;
-    color: #ffaaaa;
-    font-size: 13px;
-    word-break: break-word;
-    margin-bottom: 16px;
-  }
+  .error-box { background: rgba(180,40,40,0.07); border: 1px solid rgba(180,40,40,0.2); border-radius: 16px; padding: 16px 18px; color: #ffaaaa; font-size: 13px; word-break: break-word; margin-bottom: 16px; }
 
-  /* RESULT */
   .result-wrap { animation: fadeUp 0.5s ease; }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
-
   .result-divider { height: 1px; background: var(--border); margin: 24px 0; }
-
-  .result-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 44px;
-    font-weight: 300;
-    color: var(--cream);
-    line-height: 1;
-    margin-bottom: 4px;
-    letter-spacing: -0.5px;
-  }
-  .result-sci {
-    font-family: 'Cormorant Garamond', serif;
-    font-style: italic;
-    font-size: 16px;
-    font-weight: 300;
-    color: var(--text);
-    opacity: 0.6;
-    margin-bottom: 24px;
-  }
-
+  .result-name { font-family: 'Cormorant Garamond', serif; font-size: 44px; font-weight: 300; color: var(--cream); line-height: 1; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .result-sci { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 16px; color: var(--text); opacity: 0.6; margin-bottom: 24px; }
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 18px 16px;
-    transition: border-color 0.2s;
-  }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 16px; transition: border-color 0.2s; }
   .card:hover { border-color: rgba(240,232,168,0.2); }
   .card.wide { grid-column: 1/-1; }
   .card-icon { font-size: 20px; margin-bottom: 10px; display: block; }
-  .card-lbl {
-    font-size: 9px;
-    font-weight: 500;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--cream);
-    opacity: 0.35;
-    margin-bottom: 7px;
-    font-family: 'DM Sans', sans-serif;
-  }
+  .card-lbl { font-size: 9px; font-weight: 500; letter-spacing: 3px; text-transform: uppercase; color: var(--cream); opacity: 0.35; margin-bottom: 7px; }
   .card-val { font-size: 13px; line-height: 1.6; color: var(--text); }
   .card-val strong { color: var(--cream); font-weight: 500; }
-
-  .tip {
-    background: rgba(240,232,168,0.04);
-    border: 1px solid rgba(240,232,168,0.08);
-    border-radius: 16px;
-    padding: 18px;
-    display: flex;
-    gap: 14px;
-    margin-top: 4px;
-  }
+  .tip { background: rgba(240,232,168,0.04); border: 1px solid rgba(240,232,168,0.08); border-radius: 16px; padding: 18px; display: flex; gap: 14px; margin-top: 4px; }
   .tip-icon { font-size: 18px; flex-shrink: 0; }
   .tip-text { font-size: 13px; color: var(--text); line-height: 1.65; }
 
-  /* ── HISTORY ── */
-  .hist-header { margin-bottom: 28px; }
+  /* HISTORY */
   .hist-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text); opacity: 0.4; margin-bottom: 8px; }
-  .hist-title { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; color: var(--cream); }
+  .hist-title { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; color: var(--cream); margin-bottom: 24px; }
   .hist-actions { display: flex; justify-content: flex-end; margin-bottom: 20px; }
-  .clear-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-weight: 500;
-    font-size: 11px;
-    padding: 7px 16px;
-    border-radius: 100px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    transition: all 0.2s;
-  }
+  .clear-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 7px 16px; border-radius: 100px; cursor: pointer; transition: all 0.2s; }
   .clear-btn:hover { border-color: #ff8888; color: #ffaaaa; }
-
   .history-empty { text-align: center; padding: 80px 0; }
   .history-empty-icon { font-size: 52px; margin-bottom: 16px; opacity: 0.3; }
-  .history-empty-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); opacity: 0.4; margin-bottom: 6px; }
-  .history-empty-sub { font-size: 12px; color: var(--text); opacity: 0.3; letter-spacing: 1px; }
-
+  .history-empty-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); opacity: 0.4; }
   .history-grid { display: flex; flex-direction: column; gap: 10px; }
-  .history-item {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.2s;
-    display: flex;
-    align-items: stretch;
-  }
+  .history-item { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; display: flex; align-items: stretch; }
   .history-item:hover { border-color: rgba(240,232,168,0.2); }
   .history-thumb { width: 86px; height: 86px; object-fit: cover; flex-shrink: 0; }
   .history-thumb-placeholder { width: 86px; height: 86px; background: #141408; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; opacity: 0.4; }
   .history-info { padding: 14px 16px; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 3px; }
-  .history-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .history-sci { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12px; color: var(--text); opacity: 0.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .history-meta { font-size: 10px; color: var(--text); opacity: 0.3; letter-spacing: 0.5px; margin-top: 2px; }
+  .history-meta { font-size: 10px; color: var(--text); opacity: 0.3; margin-top: 2px; }
   .history-delete { background: none; border: none; color: var(--text); cursor: pointer; padding: 0 16px; font-size: 14px; opacity: 0; transition: opacity 0.2s; align-self: center; flex-shrink: 0; }
   .history-item:hover .history-delete { opacity: 0.4; }
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 100; overflow-y: auto; padding: 24px;
-    backdrop-filter: blur(8px);
-  }
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; overflow-y: auto; padding: 24px; backdrop-filter: blur(8px); }
   .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
   .modal { background: #0c0c0c; border: 1px solid var(--border); border-radius: 24px; max-width: 480px; width: 100%; padding: 24px; margin: auto; }
   .modal-top { display: flex; justify-content: flex-end; margin-bottom: 16px; }
-  .modal-close { background: none; border: 1px solid var(--border); color: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif; font-weight: 500; letter-spacing: 1px; padding: 6px 14px; border-radius: 100px; cursor: pointer; text-transform: uppercase; }
+  .modal-close { background: none; border: 1px solid var(--border); color: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 6px 14px; border-radius: 100px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
   .modal-img { width: 100%; border-radius: 16px; max-height: 260px; object-fit: cover; margin-bottom: 24px; }
 
   input[type=file] { display: none; }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: rgba(240,232,168,0.15); border-radius: 2px; }
 </style>
 </head>
 <body>
 
+<!-- ── AUTH OVERLAY ── -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <img src="plantscan.jpeg" alt="Plant Scan" onerror="this.style.display='none'">
+      <div class="auth-logo-text">Plant Scan</div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Logga in</button>
+      <button class="auth-tab" id="tabSignup" onclick="switchTab('signup')">Registrera</button>
+    </div>
+
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-success" id="authSuccess"></div>
+
+    <div class="auth-form">
+      <button class="google-btn" onclick="loginWithGoogle()">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>
+        Fortsätt med Google
+      </button>
+
+      <div class="auth-divider">eller</div>
+
+      <input class="auth-input" type="email" id="authEmail" placeholder="E-postadress" />
+      <input class="auth-input" type="password" id="authPassword" placeholder="Lösenord" />
+      <button class="auth-btn" id="authSubmitBtn" onclick="handleAuth()">Logga in</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── HERO ── -->
 <section class="hero" id="hero">
-  <div class="hero-bg-img" style="position:absolute;inset:0;z-index:0;overflow:hidden;border-radius:0">
+  <div style="position:absolute;inset:0;z-index:0;overflow:hidden">
     <img src="header.jpg" alt="Plant Scan" style="width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(0.55) saturate(0.9);">
     <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.15) 50%, rgba(8,8,8,0.85) 100%)"></div>
   </div>
@@ -462,44 +310,51 @@
   <div class="deco-ring ring-2"></div>
   <div class="deco-ring ring-3"></div>
 
-  <div class="hero-top" style="position:relative;z-index:1">
+  <div class="hero-top">
     <span class="hero-logo">🌿 Plant Scan</span>
-    <span class="hero-date" id="heroDate"></span>
+    <span id="heroDate" style="opacity:0.5;font-size:10px;letter-spacing:2px"></span>
   </div>
 
-  <div class="hero-center" style="position:relative;z-index:1">
+  <div class="hero-center">
     <div class="hero-eyebrow">Botanisk identifiering</div>
     <h1 class="hero-title">
       <em>Känner</em><br>
       <span class="bold">igen</span><br>
       <em>din växt</em>
     </h1>
-    <p class="hero-sub">Fotografera en växt och få direkt information om skötsel, vattning och plantering – anpassat för svensk årstid.</p>
+    <p class="hero-sub">Fotografera en växt och få direkt information om skötsel, vattning och plantering.</p>
     <a class="hero-cta" href="#app" onclick="scrollToApp()">
-      Skanna nu <span class="arrow">→</span>
+      Skanna nu <span style="font-size:16px;transition:transform 0.2s">→</span>
     </a>
   </div>
 
-  <div class="hero-bottom" style="position:relative;z-index:1">
+  <div class="hero-bottom">
     <span>59°20'N · 18°03'E</span>
-    <span>v2.0</span>
+    <span>v3.0</span>
     <span>Sverige</span>
   </div>
 </section>
 
 <!-- ── APP ── -->
 <div id="app">
-  <nav class="app-nav">
-    <button class="nav-btn active" onclick="showPage('scan', this)">🌿 Scanna</button>
-    <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">📋 Historik</button>
+  <nav class="app-nav" style="justify-content:space-between;padding:0 16px 0 0">
+    <div style="display:flex;flex:1">
+      <button class="nav-btn active" onclick="showPage('scan', this)">🌿 Scanna</button>
+      <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">📋 Historik</button>
+    </div>
+    <div class="user-menu" id="userMenu" style="display:none;align-items:center">
+      <button class="user-btn" id="userBtn" onclick="toggleDropdown()">···</button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-item" id="userEmailDisplay" style="opacity:0.5;font-size:11px;cursor:default"></div>
+        <div class="user-dropdown-item danger" onclick="signOut()">Logga ut</div>
+      </div>
+    </div>
   </nav>
 
   <!-- SCAN -->
   <div class="page active" id="page-scan">
-    <div class="scan-header">
-      <div class="scan-eyebrow">Steg 1 — Välj bild</div>
-      <h2 class="scan-title">Vilken <em>växt</em><br>är det?</h2>
-    </div>
+    <div class="scan-eyebrow">Steg 1 — Välj bild</div>
+    <h2 class="scan-title">Vilken <em>växt</em><br>är det?</h2>
 
     <div class="upload" id="uploadZone"
       onclick="document.getElementById('galInput').click()"
@@ -529,10 +384,8 @@
 
   <!-- HISTORY -->
   <div class="page" id="page-history">
-    <div class="hist-header">
-      <div class="hist-eyebrow">Dina skanningar</div>
-      <h2 class="hist-title">Historik</h2>
-    </div>
+    <div class="hist-eyebrow">Dina skanningar</div>
+    <h2 class="hist-title">Historik</h2>
     <div class="hist-actions">
       <button class="clear-btn" onclick="clearHistory()">Rensa allt</button>
     </div>
@@ -546,26 +399,138 @@
 </div>
 
 <script>
-  // Set hero date
+  // ── SUPABASE ──
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://qmzwglgksmhhrethzjxd.supabase.co',
+    'sb_publishable_BANYOJvpqm48aZ1TbQRO9A_i6pFR5jX'
+  );
+
+  var currentUser = null;
+  var authMode = 'login';
+
+  // ── INIT ──
+  sb.auth.onAuthStateChange(function(event, session) {
+    currentUser = session ? session.user : null;
+    if (currentUser) {
+      showApp();
+    } else {
+      showAuthOverlay();
+    }
+  });
+
+  function showApp() {
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('userMenu').style.display = 'flex';
+    var email = currentUser.email || currentUser.user_metadata?.full_name || 'Användare';
+    document.getElementById('userBtn').textContent = email.split('@')[0];
+    document.getElementById('userEmailDisplay').textContent = currentUser.email || '';
+    updateHistoryBadge();
+  }
+
+  function showAuthOverlay() {
+    document.getElementById('authOverlay').classList.remove('hidden');
+    document.getElementById('userMenu').style.display = 'none';
+  }
+
+  // ── AUTH ──
+  function switchTab(mode) {
+    authMode = mode;
+    document.getElementById('tabLogin').classList.toggle('active', mode === 'login');
+    document.getElementById('tabSignup').classList.toggle('active', mode === 'signup');
+    document.getElementById('authSubmitBtn').textContent = mode === 'login' ? 'Logga in' : 'Skapa konto';
+    document.getElementById('authError').style.display = 'none';
+    document.getElementById('authSuccess').style.display = 'none';
+  }
+
+  async function handleAuth() {
+    var email = document.getElementById('authEmail').value.trim();
+    var password = document.getElementById('authPassword').value;
+    var btn = document.getElementById('authSubmitBtn');
+    var errEl = document.getElementById('authError');
+    var sucEl = document.getElementById('authSuccess');
+
+    errEl.style.display = 'none';
+    sucEl.style.display = 'none';
+
+    if (!email || !password) {
+      errEl.textContent = 'Fyll i e-post och lösenord.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = authMode === 'login' ? 'Loggar in…' : 'Skapar konto…';
+
+    var result;
+    if (authMode === 'login') {
+      result = await sb.auth.signInWithPassword({ email, password });
+    } else {
+      result = await sb.auth.signUp({ email, password });
+    }
+
+    btn.disabled = false;
+    btn.textContent = authMode === 'login' ? 'Logga in' : 'Skapa konto';
+
+    if (result.error) {
+      errEl.textContent = translateError(result.error.message);
+      errEl.style.display = 'block';
+    } else if (authMode === 'signup' && !result.data.session) {
+      sucEl.textContent = '✓ Kolla din e-post för att bekräfta kontot!';
+      sucEl.style.display = 'block';
+    }
+  }
+
+  async function loginWithGoogle() {
+    var { error } = await sb.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.href }
+    });
+    if (error) {
+      var errEl = document.getElementById('authError');
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+    }
+  }
+
+  async function signOut() {
+    await sb.auth.signOut();
+    document.getElementById('userDropdown').classList.remove('open');
+  }
+
+  function toggleDropdown() {
+    document.getElementById('userDropdown').classList.toggle('open');
+  }
+
+  function translateError(msg) {
+    if (msg.includes('Invalid login')) return 'Fel e-post eller lösenord.';
+    if (msg.includes('already registered')) return 'E-postadressen är redan registrerad.';
+    if (msg.includes('Password should')) return 'Lösenordet måste vara minst 6 tecken.';
+    return msg;
+  }
+
+  // ── HERO ──
   var now = new Date();
   document.getElementById('heroDate').textContent =
     String(now.getDate()).padStart(2,'0') + '/' +
-    String(now.getMonth()+1).padStart(2,'0') + '/' +
-    now.getFullYear();
+    String(now.getMonth()+1).padStart(2,'0') + '/' + now.getFullYear();
 
   function scrollToApp() {
     document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
   }
 
-  var imgB64 = null, imgMime = 'image/jpeg', imgDataUrl = null;
-
+  // ── PAGE NAV ──
   function showPage(name, btn) {
     document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
     document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
     document.getElementById('page-' + name).classList.add('active');
     btn.classList.add('active');
     if (name === 'history') renderHistory();
+    document.getElementById('userDropdown').classList.remove('open');
   }
+
+  // ── UPLOAD ──
+  var imgB64 = null, imgMime = 'image/jpeg', imgDataUrl = null;
 
   function onDrop(e) {
     e.preventDefault();
@@ -593,6 +558,7 @@
     reader.readAsDataURL(file);
   }
 
+  // ── ANALYZE ──
   async function analyze() {
     document.getElementById('loading').style.display = 'block';
     document.getElementById('errorBox').style.display = 'none';
@@ -613,7 +579,7 @@
       });
       var data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Okänt fel');
-      saveToHistory(data, imgDataUrl);
+      await saveToHistory(data, imgDataUrl);
       document.getElementById('result').style.display = 'block';
       document.getElementById('result').innerHTML = renderResult(data);
     } catch(err) {
@@ -638,76 +604,105 @@
       + '</div>';
   }
 
-  function getHistory() {
-    try { return JSON.parse(localStorage.getItem('vaxthistorik') || '[]'); } catch(e) { return []; }
+  // ── HISTORY (Supabase) ──
+  async function saveToHistory(plant, imageDataUrl) {
+    if (!currentUser) return;
+
+    // Resize image
+    var thumb = await resizeImage(imageDataUrl, 300);
+
+    var { error } = await sb.from('scans').insert({
+      user_id: currentUser.id,
+      plant_data: plant,
+      thumbnail: thumb,
+      scanned_at: new Date().toISOString()
+    });
+
+    if (error) console.error('Save error:', error);
+    updateHistoryBadge();
   }
 
-  function saveToHistory(plant, imageDataUrl) {
-    var history = getHistory();
-    var canvas = document.createElement('canvas');
-    var img = new Image();
-    img.onload = function() {
-      var scale = Math.min(1, 200 / img.width);
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      var thumb = canvas.toDataURL('image/jpeg', 0.7);
-      history.unshift({ id: Date.now(), date: new Date().toLocaleDateString('sv-SE', { day:'numeric', month:'long', year:'numeric' }), plant: plant, thumb: thumb });
-      if (history.length > 50) history = history.slice(0, 50);
-      try { localStorage.setItem('vaxthistorik', JSON.stringify(history)); } catch(e) {}
-      updateHistoryBadge();
-    };
-    img.src = imageDataUrl;
+  function resizeImage(dataUrl, maxW) {
+    return new Promise(function(resolve) {
+      var canvas = document.createElement('canvas');
+      var img = new Image();
+      img.onload = function() {
+        var scale = Math.min(1, maxW / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = dataUrl;
+    });
   }
 
-  function updateHistoryBadge() {
-    var n = getHistory().length;
-    document.getElementById('historyNavBtn').textContent = '📋 Historik' + (n > 0 ? ' (' + n + ')' : '');
+  async function loadHistory() {
+    if (!currentUser) return [];
+    var { data, error } = await sb.from('scans')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('scanned_at', { ascending: false })
+      .limit(50);
+    if (error) { console.error(error); return []; }
+    return data || [];
   }
 
-  function renderHistory() {
-    var history = getHistory();
+  async function renderHistory() {
     var el = document.getElementById('historyList');
+    el.innerHTML = '<div class="history-empty"><div class="spinner" style="margin:0 auto"></div></div>';
+    var history = await loadHistory();
     if (history.length === 0) {
-      el.innerHTML = '<div class="history-empty"><div class="history-empty-icon">🌱</div><div class="history-empty-text">Inga skanningar ännu</div><div class="history-empty-sub">Skanna din första växt</div></div>';
+      el.innerHTML = '<div class="history-empty"><div class="history-empty-icon">🌱</div><div class="history-empty-text">Inga skanningar ännu</div></div>';
       return;
     }
     el.innerHTML = '<div class="history-grid">'
       + history.map(function(item) {
-        return '<div class="history-item" onclick="openHistoryItem(' + item.id + ')">'
-          + (item.thumb ? '<img class="history-thumb" src="' + item.thumb + '">' : '<div class="history-thumb-placeholder">🌿</div>')
+        var p = item.plant_data;
+        var date = new Date(item.scanned_at).toLocaleDateString('sv-SE', { day:'numeric', month:'long', year:'numeric' });
+        return '<div class="history-item" onclick="openHistoryItem(\'' + item.id + '\')">'
+          + (item.thumbnail ? '<img class="history-thumb" src="' + item.thumbnail + '">' : '<div class="history-thumb-placeholder">🌿</div>')
           + '<div class="history-info">'
-          + '<div class="history-name">' + (item.plant.commonName||'Okänd växt') + '</div>'
-          + '<div class="history-sci">' + (item.plant.scientificName||'') + '</div>'
-          + '<div class="history-meta">' + item.date + '</div>'
+          + '<div class="history-name">' + (p.commonName||'Okänd växt') + '</div>'
+          + '<div class="history-sci">' + (p.scientificName||'') + '</div>'
+          + '<div class="history-meta">' + date + '</div>'
           + '</div>'
-          + '<button class="history-delete" onclick="deleteItem(event,' + item.id + ')">✕</button>'
+          + '<button class="history-delete" onclick="deleteItem(event,\'' + item.id + '\')">✕</button>'
           + '</div>';
       }).join('') + '</div>';
   }
 
-  function deleteItem(e, id) {
+  async function updateHistoryBadge() {
+    if (!currentUser) return;
+    var { count } = await sb.from('scans').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+    document.getElementById('historyNavBtn').textContent = '📋 Historik' + (count > 0 ? ' (' + count + ')' : '');
+  }
+
+  async function deleteItem(e, id) {
     e.stopPropagation();
-    var h = getHistory().filter(function(i) { return i.id !== id; });
-    try { localStorage.setItem('vaxthistorik', JSON.stringify(h)); } catch(e) {}
-    renderHistory(); updateHistoryBadge();
+    await sb.from('scans').delete().eq('id', id);
+    renderHistory();
+    updateHistoryBadge();
   }
 
-  function clearHistory() {
-    if (confirm('Rensa all historik?')) {
-      localStorage.removeItem('vaxthistorik');
-      renderHistory(); updateHistoryBadge();
-    }
+  async function clearHistory() {
+    if (!confirm('Rensa all historik?')) return;
+    await sb.from('scans').delete().eq('user_id', currentUser.id);
+    renderHistory();
+    updateHistoryBadge();
   }
 
-  function openHistoryItem(id) {
-    var item = getHistory().find(function(i) { return i.id === id; });
+  var historyCache = {};
+
+  async function openHistoryItem(id) {
+    var history = await loadHistory();
+    var item = history.find(function(i) { return i.id === id; });
     if (!item) return;
     document.getElementById('modalContent').innerHTML =
       '<div class="modal-top"><button class="modal-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')">Stäng</button></div>'
-      + (item.thumb ? '<img class="modal-img" src="' + item.thumb + '">' : '')
-      + renderResult(item.plant)
-      + '<div style="font-size:10px;opacity:0.25;margin-top:20px;text-align:right;letter-spacing:1px;text-transform:uppercase">' + item.date + '</div>';
+      + (item.thumbnail ? '<img class="modal-img" src="' + item.thumbnail + '">' : '')
+      + renderResult(item.plant_data)
+      + '<div style="font-size:10px;opacity:0.25;margin-top:20px;text-align:right;letter-spacing:1px">' + new Date(item.scanned_at).toLocaleDateString('sv-SE', { day:'numeric', month:'long', year:'numeric' }) + '</div>';
     document.getElementById('modalOverlay').classList.add('open');
   }
 
@@ -716,7 +711,10 @@
       document.getElementById('modalOverlay').classList.remove('open');
   }
 
-  updateHistoryBadge();
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('userMenu').contains(e.target))
+      document.getElementById('userDropdown').classList.remove('open');
+  });
 </script>
 </body>
 </html>
