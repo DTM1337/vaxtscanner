@@ -372,6 +372,23 @@
     <input type="file" id="camInput" accept="image/*" capture="environment" onchange="handleFile(this.files[0])">
     <input type="file" id="galInput" accept="image/*" onchange="handleFile(this.files[0])">
 
+    <div class="manual-input-wrap" style="margin-bottom:14px;position:relative">
+      <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(240,232,168,0.35);margin-bottom:8px;padding-left:2px">Eller skriv in växtnamn</div>
+      <div style="display:flex;gap:10px;position:relative">
+        <div style="flex:1;position:relative">
+          <input id="manualInput" type="text" placeholder="T.ex. Monstera, Ros, Pelargon…" autocomplete="off"
+            style="width:100%;background:#0f0f0f;border:1px solid rgba(240,232,168,0.1);border-radius:14px;padding:14px 16px;color:#f0e8a8;font-family:DM Sans,sans-serif;font-size:14px;outline:none;transition:border-color 0.2s"
+            onfocus="this.style.borderColor='rgba(240,232,168,0.3)'"
+            onblur="setTimeout(hideAutocomplete, 150)"
+            onkeydown="handleAutocompleteKey(event)"
+            oninput="toggleManualBtn(); fetchSuggestions(this.value)"
+          />
+          <div id="autocompleteList" style="display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;background:#111;border:1px solid rgba(240,232,168,0.15);border-radius:12px;overflow:hidden;z-index:50;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+        </div>
+        <button class="btn-primary" id="analyzeTextBtn" disabled onclick="analyzeText()" style="flex:0;white-space:nowrap;padding:14px 20px">Sök</button>
+      </div>
+    </div>
+
     <div class="btn-row">
       <button class="btn" onclick="document.getElementById('camInput').click()">📷 Kamera</button>
       <button class="btn" onclick="document.getElementById('galInput').click()">🖼️ Bilder</button>
@@ -585,6 +602,78 @@
     reader.readAsDataURL(file);
   }
 
+  var plantSuggestions = [];
+  var acIndex = -1;
+
+  async function fetchSuggestions(query) {
+    if (query.length < 2) { hideAutocomplete(); return; }
+    var q = query.toLowerCase();
+    var filtered = plantSuggestions.filter(function(p) {
+      return p.common_name.toLowerCase().includes(q) || (p.scientific_name && p.scientific_name.toLowerCase().includes(q));
+    });
+    // Also do a live DB query
+    var { data } = await sb.from('plants')
+      .select('common_name, scientific_name, scan_count')
+      .ilike('common_name', '%' + query + '%')
+      .order('scan_count', { ascending: false })
+      .limit(6);
+    var results = data || filtered.slice(0, 6);
+    showAutocomplete(results, query);
+  }
+
+  function showAutocomplete(results, query) {
+    var list = document.getElementById('autocompleteList');
+    if (!results.length) { list.style.display = 'none'; return; }
+    acIndex = -1;
+    list.innerHTML = results.map(function(p, i) {
+      var highlighted = p.common_name.replace(new RegExp('(' + query + ')', 'gi'), '<strong style="color:#f0e8a8">$1</strong>');
+      return '<div class="ac-item" data-name="' + p.common_name + '" style="padding:11px 16px;cursor:pointer;font-size:13px;color:rgba(240,232,168,0.7);border-bottom:1px solid rgba(240,232,168,0.05);transition:background 0.15s" onmousedown="selectSuggestion('' + p.common_name.replace(/'/g, "\\'") + '')" onmouseover="this.style.background='rgba(240,232,168,0.06)'" onmouseout="this.style.background=''">'
+        + highlighted
+        + (p.scientific_name ? '<span style="font-style:italic;opacity:0.4;font-size:11px;margin-left:8px">' + p.scientific_name + '</span>' : '')
+        + (p.scan_count > 1 ? '<span style="float:right;font-size:10px;opacity:0.3">' + p.scan_count + 'x</span>' : '')
+        + '</div>';
+    }).join('');
+    list.style.display = 'block';
+  }
+
+  function hideAutocomplete() {
+    document.getElementById('autocompleteList').style.display = 'none';
+    acIndex = -1;
+  }
+
+  function selectSuggestion(name) {
+    document.getElementById('manualInput').value = name;
+    hideAutocomplete();
+    document.getElementById('analyzeTextBtn').disabled = false;
+  }
+
+  function handleAutocompleteKey(e) {
+    var list = document.getElementById('autocompleteList');
+    var items = list.querySelectorAll('.ac-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      acIndex = Math.min(acIndex + 1, items.length - 1);
+      items.forEach(function(el, i) { el.style.background = i === acIndex ? 'rgba(240,232,168,0.06)' : ''; });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      acIndex = Math.max(acIndex - 1, -1);
+      items.forEach(function(el, i) { el.style.background = i === acIndex ? 'rgba(240,232,168,0.06)' : ''; });
+    } else if (e.key === 'Enter') {
+      if (acIndex >= 0 && items[acIndex]) {
+        selectSuggestion(items[acIndex].dataset.name);
+      } else {
+        analyzeText();
+      }
+    } else if (e.key === 'Escape') {
+      hideAutocomplete();
+    }
+  }
+
+  function toggleManualBtn() {
+    var val = document.getElementById("manualInput").value.trim();
+    document.getElementById("analyzeTextBtn").disabled = val.length < 2;
+  }
+
   // ── ANALYZE ──
   async function analyze() {
     document.getElementById('loading').style.display = 'block';
@@ -615,6 +704,35 @@
     }
     document.getElementById('loading').style.display = 'none';
     document.getElementById('analyzeBtn').disabled = false;
+  }
+
+  async function analyzeText() {
+    var plantName = document.getElementById('manualInput').value.trim();
+    if (!plantName) return;
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('analyzeTextBtn').disabled = true;
+    var months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+    var month = months[new Date().getMonth()];
+    var season = ['december','januari','februari'].includes(month) ? 'vinter' : ['mars','april','maj'].includes(month) ? 'var' : ['juni','juli','augusti'].includes(month) ? 'sommar' : 'host';
+    try {
+      var res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plantName: plantName, month: month, season: season })
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Okant fel');
+      await saveToHistory(data, null);
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result').innerHTML = renderResult(data);
+    } catch(err) {
+      document.getElementById('errorBox').style.display = 'block';
+      document.getElementById('errorBox').textContent = '⚠️ ' + err.message;
+    }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('analyzeTextBtn').disabled = false;
   }
 
   function renderResult(p) {
@@ -650,6 +768,15 @@
     });
 
     if (error) console.error('Save error:', error);
+
+    // Upsert into plants table to build autocomplete list
+    if (plant.commonName) {
+      await sb.rpc('upsert_plant', {
+        p_common_name: plant.commonName,
+        p_scientific_name: plant.scientificName || ''
+      }).catch(function(e) { console.log('Plant upsert:', e); });
+    }
+
     updateHistoryBadge();
   }
 
