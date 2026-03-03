@@ -625,7 +625,10 @@
       + '<div class="cards">'
       + '<div class="card"><span class="card-icon">💧</span><div class="card-lbl">Vattning</div><div class="card-val"><strong>' + (p.wateringFreq||'') + '</strong><br>' + (p.watering||'') + '</div></div>'
       + '<div class="card"><span class="card-icon">☀️</span><div class="card-lbl">Solbehov</div><div class="card-val">' + (p.sunlight||'') + '</div></div>'
-      + '<div class="card wide"><span class="card-icon">🌍</span><div class="card-lbl">Plantering & Årstid</div><div class="card-val">' + (p.planting||'') + '</div></div>'
+      + (p.isOutdoor !== false ? '<div class="card wide"><span class="card-icon">📅</span><div class="card-lbl">Planteringstid i Sverige</div><div class="card-val"><strong>' + (p.plantingMonths||'') + '</strong><br>' + (p.planting||'') + '</div></div>' : '<div class="card wide"><span class="card-icon">🌱</span><div class="card-lbl">Skötsel</div><div class="card-val">' + (p.planting||'') + '</div></div>')
+      + (p.fertilizing ? '<div class="card wide"><span class="card-icon">🌿</span><div class="card-lbl">Gödsling</div><div class="card-val">' + p.fertilizing + '</div></div>' : '')
+      + (p.pruning ? '<div class="card wide"><span class="card-icon">✂️</span><div class="card-lbl">Beskärning</div><div class="card-val">' + p.pruning + '</div></div>' : '')
+      + (p.currentAdvice ? '<div class="card wide"><span class="card-icon">🗓️</span><div class="card-lbl">Just nu — ' + new Date().toLocaleString('sv-SE', {month:'long'}) + '</div><div class="card-val">' + p.currentAdvice + '</div></div>' : '')
       + '</div>'
       + '<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">' + (p.tip||'') + '</div></div>'
       + '</div>';
