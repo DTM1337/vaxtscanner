@@ -231,7 +231,8 @@
     var tbody = document.getElementById('usersBody');
     if (!users.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;opacity:0.4">Inga användare ännu</td></tr>'; return; }
     tbody.innerHTML = users.map(function(u) {
-      return '<tr><td style="color:var(--cream)">' + u.email + '</td><td>—</td><td><span class="badge">' + u.count + '</span></td><td>' + new Date(u.latest).toLocaleDateString('sv-SE') + '</td></tr>';
+      var isGuestUser = u.email === 'Gäst';
+      return '<tr><td style="color:var(--cream)">' + u.email + (isGuestUser ? ' <span style="font-size:10px;background:rgba(240,232,168,0.1);padding:2px 7px;border-radius:10px;opacity:0.6">gäst</span>' : '') + '</td><td>—</td><td><span class="badge">' + u.count + '</span></td><td>' + new Date(u.latest).toLocaleDateString('sv-SE') + '</td></tr>';
     }).join('');
   }
 
@@ -245,7 +246,7 @@
       return '<div class="scan-row">'
         + (s.thumbnail ? '<img class="scan-thumb" src="' + s.thumbnail + '">' : '<div class="scan-thumb-placeholder">🌿</div>')
         + '<div class="scan-info"><div class="scan-name">' + (p.commonName||'Okänd') + '</div><div class="scan-sci">' + (p.scientificName||'') + '</div><div class="scan-meta">' + date + '</div></div>'
-        + '<div class="scan-user-email">' + email + '</div>'
+        + '<div class="scan-user-email">' + email + (isGuest ? ' <span style="font-size:10px;background:rgba(240,232,168,0.1);padding:2px 7px;border-radius:10px;opacity:0.6">gäst</span>' : '') + '</div>'
         + '<button class="edit-btn" onclick="openEdit(\'' + s.id + '\')">Redigera</button>'
         + '</div>';
     }).join('');
