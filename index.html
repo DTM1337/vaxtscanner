@@ -274,7 +274,6 @@
   <div class="auth-box">
     <div class="auth-logo">
       <img src="plantscan.jpeg" alt="Plant Scan" onerror="this.style.display='none'">
-      <div class="auth-logo-text">Plant Scan</div>
     </div>
 
     <div class="auth-tabs">
@@ -296,6 +295,12 @@
       <input class="auth-input" type="email" id="authEmail" placeholder="E-postadress" />
       <input class="auth-input" type="password" id="authPassword" placeholder="Lösenord" />
       <button class="auth-btn" id="authSubmitBtn" onclick="handleAuth()">Logga in</button>
+
+      <div class="auth-divider">eller</div>
+
+      <button onclick="continueAsGuest()" style="background:none;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;padding:4px;opacity:0.6;transition:opacity 0.2s;text-decoration:underline;text-underline-offset:3px;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+        Fortsätt som gäst
+      </button>
     </div>
   </div>
 </div>
@@ -408,6 +413,7 @@
 
   var currentUser = null;
   var authMode = 'login';
+  var guestMode = false;
 
   // ── INIT ──
   sb.auth.onAuthStateChange(function(event, session) {
@@ -428,7 +434,17 @@
     updateHistoryBadge();
   }
 
+  function continueAsGuest() {
+    guestMode = true;
+    document.getElementById('authOverlay').classList.add('hidden');
+    document.getElementById('userMenu').style.display = 'flex';
+    document.getElementById('userBtn').textContent = 'Gäst';
+    document.getElementById('userEmailDisplay').textContent = 'Inte inloggad';
+    updateHistoryBadge();
+  }
+
   function showAuthOverlay() {
+    if (guestMode) return;
     document.getElementById('authOverlay').classList.remove('hidden');
     document.getElementById('userMenu').style.display = 'none';
   }
@@ -606,6 +622,15 @@
 
   // ── HISTORY (Supabase) ──
   async function saveToHistory(plant, imageDataUrl) {
+    if (guestMode) {
+      var thumb = await resizeImage(imageDataUrl, 300);
+      var h = JSON.parse(localStorage.getItem('vaxthistorik') || '[]');
+      h.unshift({ id: Date.now(), date: new Date().toLocaleDateString('sv-SE', { day:'numeric', month:'long', year:'numeric' }), plant: plant, thumb: thumb });
+      if (h.length > 50) h = h.slice(0, 50);
+      localStorage.setItem('vaxthistorik', JSON.stringify(h));
+      updateHistoryBadge();
+      return;
+    }
     if (!currentUser) return;
 
     // Resize image
@@ -673,6 +698,11 @@
   }
 
   async function updateHistoryBadge() {
+    if (guestMode) {
+      var n = JSON.parse(localStorage.getItem('vaxthistorik') || '[]').length;
+      document.getElementById('historyNavBtn').textContent = '📋 Historik' + (n > 0 ? ' (' + n + ')' : '');
+      return;
+    }
     if (!currentUser) return;
     var { count } = await sb.from('scans').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
     document.getElementById('historyNavBtn').textContent = '📋 Historik' + (count > 0 ? ' (' + count + ')' : '');
