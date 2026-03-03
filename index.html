@@ -434,12 +434,23 @@
     updateHistoryBadge();
   }
 
-  function continueAsGuest() {
+  async function continueAsGuest() {
+    var btn = document.querySelector('[onclick="continueAsGuest()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Ansluter…'; }
+    var result = await sb.auth.signInAnonymously();
+    if (result.error) {
+      if (btn) { btn.disabled = false; btn.textContent = 'Fortsätt som gäst'; }
+      var errEl = document.getElementById('authError');
+      errEl.textContent = 'Kunde inte ansluta som gäst.';
+      errEl.style.display = 'block';
+      return;
+    }
     guestMode = true;
+    currentUser = result.data.user;
     document.getElementById('authOverlay').classList.add('hidden');
     document.getElementById('userMenu').style.display = 'flex';
     document.getElementById('userBtn').textContent = 'Gäst';
-    document.getElementById('userEmailDisplay').textContent = 'Inte inloggad';
+    document.getElementById('userEmailDisplay').textContent = 'Anonym gäst';
     updateHistoryBadge();
   }
 
@@ -622,15 +633,6 @@
 
   // ── HISTORY (Supabase) ──
   async function saveToHistory(plant, imageDataUrl) {
-    if (guestMode) {
-      var thumb = await resizeImage(imageDataUrl, 300);
-      var h = JSON.parse(localStorage.getItem('vaxthistorik') || '[]');
-      h.unshift({ id: Date.now(), date: new Date().toLocaleDateString('sv-SE', { day:'numeric', month:'long', year:'numeric' }), plant: plant, thumb: thumb });
-      if (h.length > 50) h = h.slice(0, 50);
-      localStorage.setItem('vaxthistorik', JSON.stringify(h));
-      updateHistoryBadge();
-      return;
-    }
     if (!currentUser) return;
 
     // Resize image
@@ -638,6 +640,7 @@
 
     var { error } = await sb.from('scans').insert({
       user_id: currentUser.id,
+      user_email: guestMode ? 'Gäst' : (currentUser.email || null),
       plant_data: plant,
       thumbnail: thumb,
       scanned_at: new Date().toISOString()
@@ -698,11 +701,6 @@
   }
 
   async function updateHistoryBadge() {
-    if (guestMode) {
-      var n = JSON.parse(localStorage.getItem('vaxthistorik') || '[]').length;
-      document.getElementById('historyNavBtn').textContent = '📋 Historik' + (n > 0 ? ' (' + n + ')' : '');
-      return;
-    }
     if (!currentUser) return;
     var { count } = await sb.from('scans').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
     document.getElementById('historyNavBtn').textContent = '📋 Historik' + (count > 0 ? ' (' + count + ')' : '');
