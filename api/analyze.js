@@ -12,11 +12,21 @@ export default async function handler(req, res) {
     const safeMime = ['image/jpeg','image/png','image/gif','image/webp'].includes(mimeType)
       ? mimeType : 'image/jpeg';
 
-    const prompt = 'Identifiera denna växt. Det är ' + season + ' (' + month + ') i Sverige. '
+    const prompt = 'Identifiera denna vaxt. Det ar ' + season + ' (' + month + ') i Sverige. '
       + 'Svara ENDAST med JSON utan kodblock: '
-      + '{"commonName":"namn på svenska","scientificName":"latinskt namn",'
-      + '"wateringFreq":"frekvens","watering":"vattningsinstruktion",'
-      + '"sunlight":"solbehov","planting":"planteringsråd","tip":"proffstips"}';
+      + '{"commonName":"namn pa svenska","scientificName":"latinskt namn",'
+      + '"wateringFreq":"t.ex. Var 3-4 dag","watering":"kort vattningsinstruktion",'
+      + '"sunlight":"solbehov","isOutdoor":true eller false,'
+      + '"planting":"planteringsrad for Sverige och nuvarande arstid",'
+      + '"plantingMonths":"basta manaderna i Sverige t.ex. Maj-juni efter sista frost",'
+      + '"fertilizing":"nar och hur man godslar denna vaxt i Sverige, t.ex. Godsla var 2:e vecka maj-aug med allgodsel. Tomt om ej relevant.",'
+      + '"pruning":"nar och hur man klipper eller trimmar vaxten i Sverige, t.ex. Klipp direkt efter blomning i juli. Tomt om ej relevant.",'
+      + '"currentAdvice":"specifikt rad for just denna vaxt nu i ' + month + ' i Sverige",'
+      + '"tip":"ett unikt proffstips for just denna art"} '
+      + 'For utomhusvaxter och buskar: ange alltid fertilizing och pruning med exakta svenska manader. '
+      + 'For buskar och trad ar pruning extra viktigt, beskriv teknik och timing. '
+      + 'Sista frost Sverige: maj sodra Sverige, juni norra Sverige. '
+      + 'For inomhusvaxter: pruning kan lämnas tomt om ej relevant.';
 
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -27,7 +37,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
+        max_tokens: 1200,
         messages: [{ role: 'user', content: [
           { type: 'image', source: { type: 'base64', media_type: safeMime, data: imageData } },
           { type: 'text', text: prompt }
@@ -39,7 +49,7 @@ export default async function handler(req, res) {
     if (!apiRes.ok) throw new Error(data.error?.message || JSON.stringify(data));
 
     const textBlock = (data.content || []).find(b => b.type === 'text');
-    if (!textBlock) throw new Error('Inget textsvar från API');
+    if (!textBlock) throw new Error('Inget textsvar fran API');
 
     const raw = textBlock.text;
     const i = raw.indexOf('{');
