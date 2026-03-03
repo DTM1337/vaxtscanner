@@ -436,9 +436,9 @@
   sb.auth.onAuthStateChange(function(event, session) {
     currentUser = session ? session.user : null;
     if (currentUser) {
-      showApp();
+      if (!guestMode) showApp();
     } else {
-      showAuthOverlay();
+      guestMode = false; showAuthOverlay();
     }
   });
 
@@ -454,6 +454,7 @@
   async function continueAsGuest() {
     var btn = document.querySelector('[onclick="continueAsGuest()"]');
     if (btn) { btn.disabled = true; btn.textContent = 'Ansluter…'; }
+    guestMode = true; // must be set before await so onAuthStateChange sees it
     var result = await sb.auth.signInAnonymously();
     if (result.error) {
       if (btn) { btn.disabled = false; btn.textContent = 'Fortsätt som gäst'; }
@@ -462,7 +463,6 @@
       errEl.style.display = 'block';
       return;
     }
-    guestMode = true;
     currentUser = result.data.user;
     document.getElementById('authOverlay').classList.add('hidden');
     document.getElementById('userMenu').style.display = 'flex';
