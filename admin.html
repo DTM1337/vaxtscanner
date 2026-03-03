@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plant Scan — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #080808;
+    --cream: #f0e8a8;
+    --text: rgba(240,232,168,0.6);
+    --border: rgba(240,232,168,0.1);
+    --card: #0f0f0f;
+    --green: rgba(74,222,128,0.1);
+    --green-text: #86efac;
+  }
+  body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* ── LOGIN ── */
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .login-box { width: 100%; max-width: 360px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 32px; animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  .login-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; color: var(--cream); margin-bottom: 4px; }
+  .login-sub { font-size: 12px; color: var(--text); margin-bottom: 24px; letter-spacing: 0.5px; }
+  .input { width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 13px 15px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 10px; transition: border-color 0.2s; }
+  .input:focus { border-color: rgba(240,232,168,0.3); }
+  .input::placeholder { color: rgba(240,232,168,0.2); }
+  .login-btn { width: 100%; background: var(--cream); color: #080808; border: none; border-radius: 10px; padding: 14px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
+  .login-btn:hover { background: #fff8c0; }
+  .login-error { color: #ffaaaa; font-size: 12px; margin-top: 10px; display: none; }
+
+  /* ── ADMIN ── */
+  .admin-wrap { display: none; }
+  .topbar { background: #0a0a0a; border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+  .topbar-logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--cream); }
+  .topbar-logo span { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-left: 10px; font-family: 'DM Sans', sans-serif; }
+  .logout-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 7px 14px; border-radius: 100px; cursor: pointer; transition: all 0.2s; }
+  .logout-btn:hover { border-color: #ff8888; color: #ffaaaa; }
+
+  .admin-body { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
+  .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
+  .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; color: var(--cream); line-height: 1; margin-bottom: 4px; }
+  .stat-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; }
+
+  /* SECTION */
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--cream); }
+  .section-count { font-size: 11px; color: var(--text); opacity: 0.5; letter-spacing: 1px; }
+
+  /* SEARCH */
+  .search-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .search-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 15px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .search-input:focus { border-color: rgba(240,232,168,0.25); }
+  .search-input::placeholder { color: rgba(240,232,168,0.2); }
+
+  /* USERS TABLE */
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 40px; }
+  .table { width: 100%; border-collapse: collapse; }
+  .table th { padding: 13px 18px; text-align: left; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text); opacity: 0.45; font-weight: 500; border-bottom: 1px solid var(--border); }
+  .table td { padding: 14px 18px; font-size: 13px; color: var(--text); border-bottom: 1px solid rgba(240,232,168,0.04); vertical-align: middle; }
+  .table tr:last-child td { border-bottom: none; }
+  .table tr:hover td { background: rgba(240,232,168,0.02); }
+  .badge { display: inline-block; background: var(--green); color: var(--green-text); font-size: 11px; padding: 3px 10px; border-radius: 100px; font-weight: 500; }
+
+  /* SCANS TABLE */
+  .scan-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid rgba(240,232,168,0.04); transition: background 0.15s; }
+  .scan-row:last-child { border-bottom: none; }
+  .scan-row:hover { background: rgba(240,232,168,0.02); }
+  .scan-thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: #1a1a0f; }
+  .scan-thumb-placeholder { width: 52px; height: 52px; border-radius: 10px; background: #1a1a0f; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; opacity: 0.4; }
+  .scan-info { flex: 1; min-width: 0; }
+  .scan-name { font-size: 15px; color: var(--cream); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scan-sci { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12px; color: var(--text); opacity: 0.5; }
+  .scan-meta { font-size: 11px; color: var(--text); opacity: 0.35; margin-top: 3px; }
+  .scan-user-email { font-size: 11px; color: var(--text); opacity: 0.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+
+  /* EDIT */
+  .edit-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .edit-btn:hover { border-color: rgba(240,232,168,0.3); color: var(--cream); }
+
+  /* EDIT MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(6px); }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #0f0f0f; border: 1px solid var(--border); border-radius: 20px; max-width: 440px; width: 100%; padding: 28px; animation: fadeUp 0.3s ease; }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--cream); margin-bottom: 20px; }
+  .modal-thumb { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; }
+  .modal-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-bottom: 7px; }
+  .modal-input { width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
+  .modal-input:focus { border-color: rgba(240,232,168,0.3); }
+  .modal-btns { display: flex; gap: 10px; margin-top: 8px; }
+  .modal-save { flex: 1; background: var(--cream); color: #080808; border: none; border-radius: 10px; padding: 13px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .modal-save:hover { background: #fff8c0; }
+  .modal-cancel { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 13px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .modal-cancel:hover { border-color: rgba(240,232,168,0.25); color: var(--cream); }
+
+  .loading-row { text-align: center; padding: 40px; color: var(--text); opacity: 0.4; font-size: 13px; }
+  .spinner-sm { width: 24px; height: 24px; border: 1.5px solid var(--border); border-top-color: var(--cream); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: rgba(240,232,168,0.1); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-title">Admin</div>
+    <div class="login-sub">Plant Scan · Kontrollpanel</div>
+    <input class="input" type="email" id="loginEmail" placeholder="E-post" onkeydown="if(event.key==='Enter') adminLogin()">
+    <input class="input" type="password" id="loginPassword" placeholder="Lösenord" onkeydown="if(event.key==='Enter') adminLogin()">
+    <button class="login-btn" onclick="adminLogin()">Logga in</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="admin-wrap" id="adminWrap">
+  <div class="topbar">
+    <div class="topbar-logo">Plant Scan <span>Admin</span></div>
+    <button class="logout-btn" onclick="adminLogout()">Logga ut</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val" id="statUsers">—</div>
+        <div class="stat-lbl">Användare</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statScans">—</div>
+        <div class="stat-lbl">Skanningar totalt</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statToday">—</div>
+        <div class="stat-lbl">Skanningar idag</div>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section-header">
+      <div class="section-title">Användare</div>
+      <div class="section-count" id="usersCount"></div>
+    </div>
+    <div class="search-row">
+      <input class="search-input" type="text" id="userSearch" placeholder="Sök e-post…" oninput="filterUsers()">
+    </div>
+    <div class="table-wrap" style="margin-bottom:40px">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>E-post</th>
+            <th>Registrerad</th>
+            <th>Skanningar</th>
+            <th>Senaste skanning</th>
+          </tr>
+        </thead>
+        <tbody id="usersBody">
+          <tr><td colspan="4"><div class="loading-row"><div class="spinner-sm"></div>Laddar…</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- SCANS -->
+    <div class="section-header">
+      <div class="section-title">Alla skanningar</div>
+      <div class="section-count" id="scansCount"></div>
+    </div>
+    <div class="search-row">
+      <input class="search-input" type="text" id="scanSearch" placeholder="Sök växtnamn eller e-post…" oninput="filterScans()">
+    </div>
+    <div class="table-wrap" id="scansWrap">
+      <div class="loading-row"><div class="spinner-sm"></div>Laddar…</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Redigera växt</div>
+    <img id="editThumb" class="modal-thumb" src="" style="display:none">
+    <div class="modal-label">Svenskt namn</div>
+    <input class="modal-input" type="text" id="editCommonName" placeholder="Växtens namn">
+    <div class="modal-label">Latinskt namn</div>
+    <input class="modal-input" type="text" id="editSciName" placeholder="Vetenskapligt namn">
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeEdit()">Avbryt</button>
+      <button class="modal-save" onclick="saveEdit()">Spara ändringar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://qmzwglgksmhhrethzjxd.supabase.co',
+    'sb_publishable_BANYOJvpqm48aZ1TbQRO9A_i6pFR5jX'
+  );
+
+  // ── ADMIN LOGIN (Supabase auth) ──
+  var adminUser = null;
+  var allScans = [];
+  var allUsers = [];
+  var editingId = null;
+
+  sb.auth.onAuthStateChange(function(event, session) {
+    if (session) {
+      adminUser = session.user;
+      showAdmin();
+    }
+  });
+
+  async function adminLogin() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var pass = document.getElementById('loginPassword').value;
+    var errEl = document.getElementById('loginError');
+    errEl.style.display = 'none';
+
+    var { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) {
+      errEl.textContent = 'Fel e-post eller lösenord.';
+      errEl.style.display = 'block';
+    } else {
+      adminUser = data.user;
+      showAdmin();
+    }
+  }
+
+  async function adminLogout() {
+    await sb.auth.signOut();
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('adminWrap').style.display = 'none';
+  }
+
+  function showAdmin() {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('adminWrap').style.display = 'block';
+    loadData();
+  }
+
+  // ── LOAD DATA ──
+  async function loadData() {
+    await Promise.all([loadScans(), loadUsers()]);
+    renderStats();
+  }
+
+  async function loadScans() {
+    var { data, error } = await sb.from('scans')
+      .select('*, profiles:user_id(email)')
+      .order('scanned_at', { ascending: false });
+
+    if (error) { console.error(error); return; }
+    allScans = data || [];
+    document.getElementById('scansCount').textContent = allScans.length + ' skanningar';
+    renderScans(allScans);
+  }
+
+  async function loadUsers() {
+    // Get user scan counts
+    var { data: scanData } = await sb.from('scans')
+      .select('user_id, scanned_at');
+
+    // Count per user
+    var userMap = {};
+    (scanData || []).forEach(function(s) {
+      if (!userMap[s.user_id]) userMap[s.user_id] = { count: 0, latest: s.scanned_at };
+      userMap[s.user_id].count++;
+      if (s.scanned_at > userMap[s.user_id].latest) userMap[s.user_id].latest = s.scanned_at;
+    });
+
+    // Get profiles (emails from scans join)
+    var { data: profileData } = await sb.from('scans')
+      .select('user_id')
+      .order('scanned_at', { ascending: false });
+
+    // Build unique users from scans
+    var seen = new Set();
+    allUsers = [];
+    (scanData || []).forEach(function(s) {
+      if (!seen.has(s.user_id)) {
+        seen.add(s.user_id);
+        allUsers.push({
+          id: s.user_id,
+          count: userMap[s.user_id].count,
+          latest: userMap[s.user_id].latest
+        });
+      }
+    });
+
+    // Match emails from scans table profiles join
+    allScans.forEach(function(scan) {
+      var user = allUsers.find(function(u) { return u.id === scan.user_id; });
+      if (user && scan.profiles && scan.profiles.email) {
+        user.email = scan.profiles.email;
+      }
+    });
+
+    document.getElementById('usersCount').textContent = allUsers.length + ' användare';
+    renderUsers(allUsers);
+  }
+
+  function renderStats() {
+    document.getElementById('statUsers').textContent = allUsers.length;
+    document.getElementById('statScans').textContent = allScans.length;
+    var today = new Date().toISOString().split('T')[0];
+    var todayCount = allScans.filter(function(s) { return s.scanned_at && s.scanned_at.startsWith(today); }).length;
+    document.getElementById('statToday').textContent = todayCount;
+  }
+
+  function renderUsers(users) {
+    var tbody = document.getElementById('usersBody');
+    if (users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;opacity:0.4;font-size:13px">Inga användare ännu</td></tr>';
+      return;
+    }
+    tbody.innerHTML = users.map(function(u) {
+      var email = u.email || u.id.slice(0,8) + '…';
+      var latest = u.latest ? new Date(u.latest).toLocaleDateString('sv-SE') : '—';
+      return '<tr>'
+        + '<td style="color:var(--cream)">' + email + '</td>'
+        + '<td>—</td>'
+        + '<td><span class="badge">' + u.count + '</span></td>'
+        + '<td>' + latest + '</td>'
+        + '</tr>';
+    }).join('');
+  }
+
+  function renderScans(scans) {
+    var wrap = document.getElementById('scansWrap');
+    if (scans.length === 0) {
+      wrap.innerHTML = '<div class="loading-row">Inga skanningar hittades</div>';
+      return;
+    }
+    wrap.innerHTML = scans.map(function(s) {
+      var p = s.plant_data || {};
+      var email = (s.profiles && s.profiles.email) ? s.profiles.email : (s.user_id ? s.user_id.slice(0,8) + '…' : '—');
+      var date = s.scanned_at ? new Date(s.scanned_at).toLocaleDateString('sv-SE', { day:'numeric', month:'short', year:'numeric' }) : '—';
+      return '<div class="scan-row">'
+        + (s.thumbnail
+            ? '<img class="scan-thumb" src="' + s.thumbnail + '">'
+            : '<div class="scan-thumb-placeholder">🌿</div>')
+        + '<div class="scan-info">'
+        + '<div class="scan-name">' + (p.commonName || 'Okänd') + '</div>'
+        + '<div class="scan-sci">' + (p.scientificName || '') + '</div>'
+        + '<div class="scan-meta">' + date + '</div>'
+        + '</div>'
+        + '<div class="scan-user-email">' + email + '</div>'
+        + '<button class="edit-btn" onclick="openEdit(\'' + s.id + '\')">Redigera</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  // ── SEARCH ──
+  function filterUsers() {
+    var q = document.getElementById('userSearch').value.toLowerCase();
+    var filtered = allUsers.filter(function(u) {
+      return !q || (u.email && u.email.toLowerCase().includes(q));
+    });
+    renderUsers(filtered);
+  }
+
+  function filterScans() {
+    var q = document.getElementById('scanSearch').value.toLowerCase();
+    var filtered = allScans.filter(function(s) {
+      var p = s.plant_data || {};
+      var email = (s.profiles && s.profiles.email) || '';
+      return !q
+        || (p.commonName && p.commonName.toLowerCase().includes(q))
+        || (p.scientificName && p.scientificName.toLowerCase().includes(q))
+        || email.toLowerCase().includes(q);
+    });
+    renderScans(filtered);
+  }
+
+  // ── EDIT ──
+  function openEdit(id) {
+    var scan = allScans.find(function(s) { return s.id === id; });
+    if (!scan) return;
+    editingId = id;
+    var p = scan.plant_data || {};
+    document.getElementById('editCommonName').value = p.commonName || '';
+    document.getElementById('editSciName').value = p.scientificName || '';
+    var thumb = document.getElementById('editThumb');
+    if (scan.thumbnail) { thumb.src = scan.thumbnail; thumb.style.display = 'block'; }
+    else { thumb.style.display = 'none'; }
+    document.getElementById('editModal').classList.add('open');
+  }
+
+  function closeEdit() {
+    document.getElementById('editModal').classList.remove('open');
+    editingId = null;
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    var scan = allScans.find(function(s) { return s.id === editingId; });
+    if (!scan) return;
+
+    var newCommon = document.getElementById('editCommonName').value.trim();
+    var newSci = document.getElementById('editSciName').value.trim();
+
+    var updatedPlantData = Object.assign({}, scan.plant_data, {
+      commonName: newCommon,
+      scientificName: newSci
+    });
+
+    var { error } = await sb.from('scans')
+      .update({ plant_data: updatedPlantData })
+      .eq('id', editingId);
+
+    if (error) {
+      alert('Fel: ' + error.message);
+      return;
+    }
+
+    // Update local data
+    scan.plant_data = updatedPlantData;
+    closeEdit();
+    filterScans();
+  }
+
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === document.getElementById('editModal')) closeEdit();
+  });
+</script>
+</body>
+</html>
