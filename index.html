@@ -232,6 +232,10 @@
   .tip { background: rgba(240,232,168,0.04); border: 1px solid rgba(240,232,168,0.08); border-radius: 16px; padding: 18px; display: flex; gap: 14px; margin-top: 4px; }
   .tip-icon { font-size: 18px; flex-shrink: 0; }
   .tip-text { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .fun-fact { background: rgba(240,232,168,0.03); border: 1px solid rgba(240,232,168,0.12); border-radius: 16px; padding: 18px; display: flex; gap: 14px; margin-top: 10px; }
+  .fun-fact-icon { font-size: 18px; flex-shrink: 0; }
+  .fun-fact-lbl { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--cream); opacity: 0.4; margin-bottom: 6px; }
+  .fun-fact-text { font-size: 13px; color: var(--text); line-height: 1.65; }
 
   /* HISTORY */
   .hist-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text); opacity: 0.4; margin-bottom: 8px; }
@@ -756,6 +760,7 @@
       + wideCard('🗓️', 'Just nu — ' + month, p.currentAdvice)
       + '</div>'
       + (p.tip ? '<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">' + p.tip + '</div></div>' : '')
+      + (p.funFact ? '<div class="fun-fact"><span class="fun-fact-icon">🌿</span><div class="fun-fact-text"><div class="fun-fact-lbl">Visste du att...</div>' + p.funFact + '</div></div>' : '')
       + '</div>';
   }
 
