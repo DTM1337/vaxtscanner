@@ -777,10 +777,12 @@
 
     // Upsert into plants table to build autocomplete list
     if (plant.commonName) {
-      await sb.rpc('upsert_plant', {
-        p_common_name: plant.commonName,
-        p_scientific_name: plant.scientificName || ''
-      }).catch(function(e) { console.log('Plant upsert:', e); });
+      try {
+        await sb.rpc('upsert_plant', {
+          p_common_name: plant.commonName,
+          p_scientific_name: plant.scientificName || ''
+        });
+      } catch(e) { console.log('Plant upsert:', e); }
     }
 
     updateHistoryBadge();
