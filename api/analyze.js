@@ -13,17 +13,22 @@ export default async function handler(req, res) {
 
     const prompt = 'Det ar ' + season + ' (' + month + ') i Sverige. '
       + 'Svara ENDAST med JSON utan kodblock: '
-      + '{"commonName":"namn pa svenska","scientificName":"latinskt namn",'
-      + '"wateringFreq":"t.ex. Var 3-4 dag","watering":"kort vattningsinstruktion",'
-      + '"sunlight":"solbehov","isOutdoor":true,'
-      + '"planting":"planteringsrad for Sverige","plantingMonths":"basta manader t.ex. Maj-juni",'
-      + '"fertilizing":"nar och hur godsla i Sverige, tomt om ej relevant",'
-      + '"pruning":"nar och hur klippa i Sverige, tomt om ej relevant",'
-      + '"currentAdvice":"specifikt rad for vaxten nu i ' + month + ' i Sverige",'
-      + '"tip":"unikt proffstips for arten"} '
-      + 'For utomhusvaxter/buskar: alltid fertilizing och pruning med exakta manader. '
-      + 'Sista frost Sverige: maj sodra, juni norra. '
-      + 'For inomhusvaxter: pruning tomt om ej relevant.';
+      + '{"commonName":"KORREKT svenskt namn (ej direktoversatt fran engelska, t.ex. Fredens lilja heter Fredskalla, Peace rose heter Fredsros - anvand det etablerade svenska namnet)",'
+      + '"scientificName":"latinskt namn",'
+      + '"wateringFreq":"t.ex. Var 3-4 dag, eller tomt strang om okant",'
+      + '"watering":"kort vattningsinstruktion, eller tomt om okant",'
+      + '"sunlight":"solbehov, eller tomt om okant",'
+      + '"isOutdoor":true eller false,'
+      + '"planting":"planteringsrad for Sverige, eller tomt om ej relevant",'
+      + '"plantingMonths":"basta manader t.ex. Maj-juni, eller tomt om ej relevant",'
+      + '"fertilizing":"nar och hur godsla i Sverige, eller tomt om ej relevant",'
+      + '"pruning":"nar och hur klippa, eller tomt om ej relevant",'
+      + '"currentAdvice":"rad for vaxten nu i ' + month + ', eller tomt om inget specifikt",'
+      + '"tip":"unikt proffstips, eller tomt om inget specifikt"} '
+      + 'VIKTIGT: Anvand alltid det officiella svenska trivialnamnet, inte en direktoversattning. '
+      + 'Lamna faltet som tomt strang om du inte har tillracklig information. '
+      + 'For utomhusvaxter/buskar: ange fertilizing och pruning med exakta manader. '
+      + 'Sista frost Sverige: maj sodra, juni norra.';
 
     const messages = plantName
       ? [{ role: 'user', content: 'Ge skotselinformation om vaxten: ' + plantName + '. ' + prompt }]
