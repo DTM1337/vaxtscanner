@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Växtscanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a1a0c; color: #d4e8d0; font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  .nav { display: flex; border-bottom: 1px solid #1e3a22; }
+  .nav-btn { flex: 1; padding: 16px; background: none; border: none; color: #d4e8d0; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; opacity: 0.5; transition: all 0.2s; border-bottom: 2px solid transparent; }
+  .nav-btn.active { opacity: 1; color: #4ade80; border-bottom-color: #4ade80; }
+  .page { display: none; max-width: 480px; margin: 0 auto; padding: 28px 24px 80px; }
+  .page.active { display: block; }
+  .tagline { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #4ade80; opacity: 0.7; margin-bottom: 8px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: 36px; color: #fef9ef; line-height: 1.1; margin-bottom: 28px; }
+  h1 em { color: #4ade80; font-style: italic; }
+  .upload { border: 1.5px dashed #1e3a22; border-radius: 20px; padding: 40px 24px; text-align: center; cursor: pointer; margin-bottom: 16px; transition: all 0.2s; background: rgba(74,222,128,0.02); }
+  .upload:hover { border-color: #4ade80; background: rgba(74,222,128,0.05); }
+  .upload.filled { padding: 0; border-style: solid; border-color: #166534; position: relative; overflow: hidden; }
+  .upload img { width: 100%; border-radius: 18px; display: block; max-height: 300px; object-fit: cover; }
+  .change-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(10,26,12,0.9); border: 1px solid #166534; color: #4ade80; font-size: 11px; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .btn-row { display: flex; gap: 10px; margin-bottom: 24px; }
+  .btn { flex: 1; padding: 14px; border-radius: 14px; border: 1px solid #1e3a22; background: #111f13; color: #d4e8d0; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .btn:hover { border-color: #166534; }
+  .btn-primary { flex: 1.3; background: #4ade80; color: #0a1a0c; border: none; font-weight: 600; transition: all 0.2s; }
+  .btn-primary:hover:not(:disabled) { background: #22c55e; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #1a3a1e; color: #4ade80; opacity: 0.5; cursor: not-allowed; transform: none; }
+  .spinner-wrap { text-align: center; padding: 32px; background: #111f13; border: 1px solid #1e3a22; border-radius: 20px; margin-bottom: 16px; }
+  .spinner { width: 36px; height: 36px; border: 2px solid #1e3a22; border-top-color: #4ade80; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 14px; padding: 16px; color: #fca5a5; font-size: 13px; word-break: break-word; margin-bottom: 16px; }
+  .result-wrap { animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  .result-name { font-family: 'Playfair Display', serif; font-size: 30px; color: #fef9ef; font-weight: 700; margin-bottom: 4px; }
+  .result-sci { font-family: 'Playfair Display', serif; font-style: italic; font-size: 14px; color: #4ade80; opacity: 0.8; margin-bottom: 20px; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .card { background: #111f13; border: 1px solid #1e3a22; border-radius: 14px; padding: 16px; transition: border-color 0.2s; }
+  .card:hover { border-color: #166534; }
+  .card.wide { grid-column: 1/-1; }
+  .card-icon { font-size: 22px; margin-bottom: 8px; }
+  .card-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #4ade80; opacity: 0.7; margin-bottom: 5px; }
+  .card-val { font-size: 13px; line-height: 1.5; }
+  .tip { background: rgba(74,222,128,0.05); border: 1px solid rgba(74,222,128,0.15); border-radius: 14px; padding: 16px; display: flex; gap: 12px; margin-top: 4px; }
+  .tip-icon { font-size: 18px; flex-shrink: 0; }
+  .tip-text { font-size: 13px; opacity: 0.8; line-height: 1.6; }
+  .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .clear-btn { background: none; border: 1px solid #1e3a22; color: #d4e8d0; font-family: 'DM Sans', sans-serif; font-size: 12px; padding: 6px 14px; border-radius: 20px; cursor: pointer; opacity: 0.6; transition: all 0.2s; }
+  .clear-btn:hover { border-color: #fca5a5; color: #fca5a5; opacity: 1; }
+  .history-empty { text-align: center; padding: 60px 0; opacity: 0.4; }
+  .history-grid { display: flex; flex-direction: column; gap: 12px; }
+  .history-item { background: #111f13; border: 1px solid #1e3a22; border-radius: 16px; overflow: hidden; cursor: pointer; transition: border-color 0.2s; display: flex; }
+  .history-item:hover { border-color: #166534; }
+  .history-thumb { width: 90px; height: 90px; object-fit: cover; flex-shrink: 0; }
+  .history-thumb-placeholder { width: 90px; height: 90px; background: #1a3a1e; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .history-info { padding: 14px 16px; flex: 1; min-width: 0; }
+  .history-name { font-family: 'Playfair Display', serif; font-size: 17px; color: #fef9ef; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-sci { font-family: 'Playfair Display', serif; font-style: italic; font-size: 12px; color: #4ade80; opacity: 0.7; margin-bottom: 6px; }
+  .history-meta { font-size: 11px; opacity: 0.4; }
+  .history-delete { background: none; border: none; color: #fca5a5; cursor: pointer; padding: 8px 12px; font-size: 16px; opacity: 0; transition: opacity 0.2s; align-self: center; }
+  .history-item:hover .history-delete { opacity: 0.6; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; overflow-y: auto; padding: 24px; }
+  .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+  .modal { background: #0a1a0c; border: 1px solid #1e3a22; border-radius: 20px; max-width: 480px; width: 100%; padding: 24px; margin: auto; }
+  .modal-close { float: right; background: none; border: 1px solid #1e3a22; color: #d4e8d0; font-size: 12px; padding: 5px 12px; border-radius: 20px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .modal-img { width: 100%; border-radius: 14px; max-height: 240px; object-fit: cover; margin: 16px 0; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('scan', this)">🔍 Scanna</button>
+  <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">🌿 Historik</button>
+</div>
+
+<div class="page active" id="page-scan">
+  <div class="tagline">Växtidentifiering</div>
+  <h1>Känner igen<br>din <em>växt</em></h1>
+
+  <div class="upload" id="uploadZone" onclick="document.getElementById('galInput').click()"
+    ondrop="onDrop(event)" ondragover="event.preventDefault()">
+    <span style="font-size:48px;margin-bottom:12px;display:block">🌱</span>
+    <div style="font-size:15px;opacity:0.7;margin-bottom:6px">Tryck för att välja bild</div>
+    <div style="font-size:12px;color:#4ade80;opacity:0.5">Kamera eller bildbibliotek</div>
+  </div>
+
+  <input type="file" id="camInput" accept="image/*" capture="environment" onchange="handleFile(this.files[0])">
+  <input type="file" id="galInput" accept="image/*" onchange="handleFile(this.files[0])">
+
+  <div class="btn-row">
+    <button class="btn" onclick="document.getElementById('camInput').click()">📷 Kamera</button>
+    <button class="btn" onclick="document.getElementById('galInput').click()">🖼️ Bilder</button>
+    <button class="btn-primary" id="analyzeBtn" disabled onclick="analyze()">Identifiera</button>
+  </div>
+
+  <div id="loading" style="display:none" class="spinner-wrap">
+    <div class="spinner"></div>
+    <div style="font-size:13px;opacity:0.7">Analyserar växten…</div>
+    <div style="font-size:11px;color:#4ade80;opacity:0.5;margin-top:4px;font-style:italic">Botanisk analys pågår</div>
+  </div>
+  <div id="errorBox" class="error-box" style="display:none"></div>
+  <div id="result" style="display:none"></div>
+</div>
+
+<div class="page" id="page-history">
+  <div class="history-header">
+    <div>
+      <div class="tagline">Tidigare skanningar</div>
+      <h1 style="font-size:28px;margin-bottom:0">Historik</h1>
+    </div>
+    <button class="clear-btn" onclick="clearHistory()">Rensa allt</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+  var imgB64 = null;
+  var imgMime = 'image/jpeg';
+  var imgDataUrl = null;
+
+  function showPage(name, btn) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('page-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'history') renderHistory();
+  }
+
+  function onDrop(e) {
+    e.preventDefault();
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var dataUrl = e.target.result;
+      var mime = dataUrl.split(';')[0].replace('data:', '');
+      imgMime = ['image/jpeg','image/png','image/gif','image/webp'].includes(mime) ? mime : 'image/jpeg';
+      imgB64 = dataUrl.split(',')[1];
+      imgDataUrl = dataUrl;
+      var zone = document.getElementById('uploadZone');
+      zone.className = 'upload filled';
+      zone.onclick = null;
+      zone.innerHTML = '<img src="' + dataUrl + '" alt="växt">'
+        + '<button class="change-btn" onclick="document.getElementById(\'galInput\').click()">Byt bild</button>';
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('errorBox').style.display = 'none';
+      document.getElementById('analyzeBtn').disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function analyze() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('errorBox').style.display = 'none';
+    document.getElementById('result').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = true;
+
+    var months = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+    var month = months[new Date().getMonth()];
+    var season = ['december','januari','februari'].includes(month) ? 'vinter'
+      : ['mars','april','maj'].includes(month) ? 'vår'
+      : ['juni','juli','augusti'].includes(month) ? 'sommar' : 'höst';
+
+    try {
+      var res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageData: imgB64, mimeType: imgMime, month: month, season: season })
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Okänt fel');
+
+      saveToHistory(data, imgDataUrl);
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result').innerHTML = renderResult(data);
+
+    } catch(err) {
+      document.getElementById('errorBox').style.display = 'block';
+      document.getElementById('errorBox').textContent = '⚠️ ' + err.message;
+    }
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+
+  function renderResult(p) {
+    return '<div class="result-wrap">'
+      + '<div class="result-name">' + (p.commonName||'') + '</div>'
+      + '<div class="result-sci">' + (p.scientificName||'') + '</div>'
+      + '<div class="cards">'
+      + '<div class="card"><div class="card-icon">💧</div><div class="card-lbl">Vattning</div><div class="card-val"><strong style="color:#fef9ef">' + (p.wateringFreq||'') + '</strong><br>' + (p.watering||'') + '</div></div>'
+      + '<div class="card"><div class="card-icon">☀️</div><div class="card-lbl">Solbehov</div><div class="card-val">' + (p.sunlight||'') + '</div></div>'
+      + '<div class="card wide"><div class="card-icon">🌍</div><div class="card-lbl">Plantering & Årstid</div><div class="card-val">' + (p.planting||'') + '</div></div>'
+      + '</div>'
+      + '<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">' + (p.tip||'') + '</div></div>'
+      + '</div>';
+  }
+
+  function getHistory() {
+    try { return JSON.parse(localStorage.getItem('vaxthistorik') || '[]'); } catch(e) { return []; }
+  }
+
+  function saveToHistory(plant, imageDataUrl) {
+    var history = getHistory();
+    var canvas = document.createElement('canvas');
+    var img = new Image();
+    img.onload = function() {
+      var maxW = 200;
+      var scale = Math.min(1, maxW / img.width);
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      var thumb = canvas.toDataURL('image/jpeg', 0.7);
+      history.unshift({ id: Date.now(), date: new Date().toLocaleDateString('sv-SE', { day:'numeric', month:'long', year:'numeric' }), plant: plant, thumb: thumb });
+      if (history.length > 50) history = history.slice(0, 50);
+      try { localStorage.setItem('vaxthistorik', JSON.stringify(history)); } catch(e) {}
+      document.getElementById('historyNavBtn').textContent = '🌿 Historik (' + getHistory().length + ')';
+    };
+    img.src = imageDataUrl;
+  }
+
+  function renderHistory() {
+    var history = getHistory();
+    var el = document.getElementById('historyList');
+    if (history.length === 0) {
+      el.innerHTML = '<div class="history-empty"><div style="font-size:48px;margin-bottom:12px">🌱</div><div style="font-size:14px">Inga skanningar ännu</div></div>';
+      return;
+    }
+    el.innerHTML = '<div class="history-grid">'
+      + history.map(function(item) {
+        return '<div class="history-item" onclick="openHistoryItem(' + item.id + ')">'
+          + (item.thumb ? '<img class="history-thumb" src="' + item.thumb + '">' : '<div class="history-thumb-placeholder">🌿</div>')
+          + '<div class="history-info">'
+          + '<div class="history-name">' + (item.plant.commonName||'Okänd växt') + '</div>'
+          + '<div class="history-sci">' + (item.plant.scientificName||'') + '</div>'
+          + '<div class="history-meta">' + item.date + '</div>'
+          + '</div>'
+          + '<button class="history-delete" onclick="deleteItem(event,' + item.id + ')">✕</button>'
+          + '</div>';
+      }).join('') + '</div>';
+  }
+
+  function deleteItem(e, id) {
+    e.stopPropagation();
+    var history = getHistory().filter(function(i) { return i.id !== id; });
+    try { localStorage.setItem('vaxthistorik', JSON.stringify(history)); } catch(e) {}
+    renderHistory();
+  }
+
+  function clearHistory() {
+    if (confirm('Rensa all historik?')) {
+      localStorage.removeItem('vaxthistorik');
+      renderHistory();
+    }
+  }
+
+  function openHistoryItem(id) {
+    var item = getHistory().find(function(i) { return i.id === id; });
+    if (!item) return;
+    document.getElementById('modalContent').innerHTML =
+      '<button class="modal-close" onclick="document.getElementById(\'modalOverlay\').classList.remove(\'open\')">Stäng</button>'
+      + (item.thumb ? '<img class="modal-img" src="' + item.thumb + '">' : '')
+      + renderResult(item.plant)
+      + '<div style="font-size:11px;opacity:0.4;margin-top:16px;text-align:right">' + item.date + '</div>';
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('modalOverlay'))
+      document.getElementById('modalOverlay').classList.remove('open');
+  }
+</script>
+</body>
+</html>
