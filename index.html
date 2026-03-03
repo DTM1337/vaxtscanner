@@ -763,7 +763,7 @@
     if (!currentUser) return;
 
     // Resize image
-    var thumb = await resizeImage(imageDataUrl, 300);
+    var thumb = imageDataUrl ? await resizeImage(imageDataUrl, 300) : null;
 
     var { error } = await sb.from('scans').insert({
       user_id: currentUser.id,
