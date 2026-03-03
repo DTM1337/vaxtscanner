@@ -317,7 +317,7 @@
 
   <div class="hero-top">
     <span class="hero-logo">🌿 Plant Scan</span>
-    <span id="heroDate" style="opacity:0.5;font-size:10px;letter-spacing:2px"></span>
+    <div class="user-menu" id="userMenuHero" style="display:none;align-items:center;position:relative"><button class="user-btn" id="userBtnHero" onclick="toggleDropdown()" style="font-size:11px;padding:7px 14px;border-radius:100px;background:rgba(240,232,168,0.08);border:1px solid rgba(240,232,168,0.2);color:#f0e8a8;cursor:pointer">···</button><div class="user-dropdown" id="userDropdown"><div class="user-dropdown-item" id="userEmailDisplay" style="opacity:0.5;font-size:11px;cursor:default"></div><div class="user-dropdown-item danger" onclick="signOut()">Logga ut</div></div></div>
   </div>
 
   <div class="hero-center">
@@ -342,18 +342,12 @@
 
 <!-- ── APP ── -->
 <div id="app">
-  <nav class="app-nav" style="justify-content:space-between;padding:0 16px 0 0">
+  <nav class="app-nav">
     <div style="display:flex;flex:1">
       <button class="nav-btn active" onclick="showPage('scan', this)">🌿 Scanna</button>
-      <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">📋 Historik</button>
+      <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">🌿 Mina växter</button>
     </div>
-    <div class="user-menu" id="userMenu" style="display:none;align-items:center">
-      <button class="user-btn" id="userBtn" onclick="toggleDropdown()">···</button>
-      <div class="user-dropdown" id="userDropdown">
-        <div class="user-dropdown-item" id="userEmailDisplay" style="opacity:0.5;font-size:11px;cursor:default"></div>
-        <div class="user-dropdown-item danger" onclick="signOut()">Logga ut</div>
-      </div>
-    </div>
+
   </nav>
 
   <!-- SCAN -->
@@ -406,8 +400,8 @@
 
   <!-- HISTORY -->
   <div class="page" id="page-history">
-    <div class="hist-eyebrow">Dina skanningar</div>
-    <h2 class="hist-title">Historik</h2>
+    <div class="hist-eyebrow">Din trädgård</div>
+    <h2 class="hist-title">Mina växter</h2>
     <div class="hist-actions">
       <button class="clear-btn" onclick="clearHistory()">Rensa allt</button>
     </div>
@@ -444,9 +438,9 @@
 
   function showApp() {
     document.getElementById('authOverlay').classList.add('hidden');
-    document.getElementById('userMenu').style.display = 'flex';
-    var email = currentUser.email || currentUser.user_metadata?.full_name || 'Användare';
-    document.getElementById('userBtn').textContent = email.split('@')[0];
+    document.getElementById('userMenuHero').style.display = 'flex';
+    var email = currentUser.email || (currentUser.user_metadata && currentUser.user_metadata.full_name) || 'Användare';
+    document.getElementById('userBtnHero').textContent = email.split('@')[0];
     document.getElementById('userEmailDisplay').textContent = currentUser.email || '';
     updateHistoryBadge();
   }
@@ -465,8 +459,8 @@
     }
     currentUser = result.data.user;
     document.getElementById('authOverlay').classList.add('hidden');
-    document.getElementById('userMenu').style.display = 'flex';
-    document.getElementById('userBtn').textContent = 'Gäst';
+    document.getElementById('userMenuHero').style.display = 'flex';
+    document.getElementById('userBtnHero').textContent = 'Gäst';
     document.getElementById('userEmailDisplay').textContent = 'Anonym gäst';
     updateHistoryBadge();
   }
@@ -554,10 +548,6 @@
   }
 
   // ── HERO ──
-  var now = new Date();
-  document.getElementById('heroDate').textContent =
-    String(now.getDate()).padStart(2,'0') + '/' +
-    String(now.getMonth()+1).padStart(2,'0') + '/' + now.getFullYear();
 
   function scrollToApp() {
     document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
@@ -742,19 +732,30 @@
   }
 
   function renderResult(p) {
+    function card(icon, lbl, val) {
+      if (!val || val.trim() === '') return '';
+      return '<div class="card"><span class="card-icon">' + icon + '</span><div class="card-lbl">' + lbl + '</div><div class="card-val">' + val + '</div></div>';
+    }
+    function wideCard(icon, lbl, val) {
+      if (!val || val.trim() === '') return '';
+      return '<div class="card wide"><span class="card-icon">' + icon + '</span><div class="card-lbl">' + lbl + '</div><div class="card-val">' + val + '</div></div>';
+    }
+    var waterVal = [p.wateringFreq ? '<strong>' + p.wateringFreq + '</strong>' : '', p.watering || ''].filter(Boolean).join('<br>');
+    var plantingVal = p.plantingMonths ? '<strong>' + p.plantingMonths + '</strong>' + (p.planting ? '<br>' + p.planting : '') : (p.planting || '');
+    var month = new Date().toLocaleString('sv-SE', {month:'long'});
     return '<div class="result-wrap">'
       + '<div class="result-name">' + (p.commonName||'') + '</div>'
       + '<div class="result-sci">' + (p.scientificName||'') + '</div>'
       + '<div class="result-divider"></div>'
       + '<div class="cards">'
-      + '<div class="card"><span class="card-icon">💧</span><div class="card-lbl">Vattning</div><div class="card-val"><strong>' + (p.wateringFreq||'') + '</strong><br>' + (p.watering||'') + '</div></div>'
-      + '<div class="card"><span class="card-icon">☀️</span><div class="card-lbl">Solbehov</div><div class="card-val">' + (p.sunlight||'') + '</div></div>'
-      + (p.isOutdoor !== false ? '<div class="card wide"><span class="card-icon">📅</span><div class="card-lbl">Planteringstid i Sverige</div><div class="card-val"><strong>' + (p.plantingMonths||'') + '</strong><br>' + (p.planting||'') + '</div></div>' : '<div class="card wide"><span class="card-icon">🌱</span><div class="card-lbl">Skötsel</div><div class="card-val">' + (p.planting||'') + '</div></div>')
-      + (p.fertilizing ? '<div class="card wide"><span class="card-icon">🌿</span><div class="card-lbl">Gödsling</div><div class="card-val">' + p.fertilizing + '</div></div>' : '')
-      + (p.pruning ? '<div class="card wide"><span class="card-icon">✂️</span><div class="card-lbl">Beskärning</div><div class="card-val">' + p.pruning + '</div></div>' : '')
-      + (p.currentAdvice ? '<div class="card wide"><span class="card-icon">🗓️</span><div class="card-lbl">Just nu — ' + new Date().toLocaleString('sv-SE', {month:'long'}) + '</div><div class="card-val">' + p.currentAdvice + '</div></div>' : '')
+      + (waterVal ? '<div class="card"><span class="card-icon">💧</span><div class="card-lbl">Vattning</div><div class="card-val">' + waterVal + '</div></div>' : '')
+      + card('☀️', 'Solbehov', p.sunlight)
+      + (plantingVal ? wideCard(p.isOutdoor !== false ? '📅' : '🌱', p.isOutdoor !== false ? 'Planteringstid i Sverige' : 'Skötsel', plantingVal) : '')
+      + wideCard('🌿', 'Gödsling', p.fertilizing)
+      + wideCard('✂️', 'Beskärning', p.pruning)
+      + wideCard('🗓️', 'Just nu — ' + month, p.currentAdvice)
       + '</div>'
-      + '<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">' + (p.tip||'') + '</div></div>'
+      + (p.tip ? '<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">' + p.tip + '</div></div>' : '')
       + '</div>';
   }
 
@@ -841,7 +842,7 @@
   async function updateHistoryBadge() {
     if (!currentUser) return;
     var { count } = await sb.from('scans').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
-    document.getElementById('historyNavBtn').textContent = '📋 Historik' + (count > 0 ? ' (' + count + ')' : '');
+    document.getElementById('historyNavBtn').textContent = '🌿 Mina växter' + (count > 0 ? ' (' + count + ')' : '');
   }
 
   async function deleteItem(e, id) {
@@ -878,7 +879,8 @@
   }
 
   document.addEventListener('click', function(e) {
-    if (!document.getElementById('userMenu').contains(e.target))
+    var heroMenu = document.getElementById('userMenuHero');
+    if (heroMenu && !heroMenu.contains(e.target))
       document.getElementById('userDropdown').classList.remove('open');
   });
 </script>
