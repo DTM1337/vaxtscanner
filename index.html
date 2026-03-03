@@ -622,20 +622,26 @@
   }
 
   function showAutocomplete(results, query) {
-    var list = document.getElementById('autocompleteList');
-    if (!results.length) { list.style.display = 'none'; return; }
+    var list = document.getElementById("autocompleteList");
+    if (!results.length) { list.style.display = "none"; return; }
     acIndex = -1;
-    list.innerHTML = results.map(function(p, i) {
-      var highlighted = p.common_name.replace(new RegExp('(' + query + ')', 'gi'), '<strong style="color:#f0e8a8">$1</strong>');
-      return '<div class="ac-item" data-name="' + p.common_name + '" style="padding:11px 16px;cursor:pointer;font-size:13px;color:rgba(240,232,168,0.7);border-bottom:1px solid rgba(240,232,168,0.05);transition:background 0.15s" onmousedown="selectSuggestion('' + p.common_name.replace(/'/g, "\\'") + '')" onmouseover="this.style.background='rgba(240,232,168,0.06)'" onmouseout="this.style.background=''">'
-        + highlighted
-        + (p.scientific_name ? '<span style="font-style:italic;opacity:0.4;font-size:11px;margin-left:8px">' + p.scientific_name + '</span>' : '')
-        + (p.scan_count > 1 ? '<span style="float:right;font-size:10px;opacity:0.3">' + p.scan_count + 'x</span>' : '')
-        + '</div>';
-    }).join('');
-    list.style.display = 'block';
+    var html = "";
+    results.forEach(function(p) {
+      var safeName = p.common_name.replace(/"/g, "&quot;");
+      var re = new RegExp("(" + query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+      var highlighted = p.common_name.replace(re, "<strong style=\"color:#f0e8a8\">$1</strong>");
+      var sci = p.scientific_name ? "<span style=\"font-style:italic;opacity:0.4;font-size:11px;margin-left:8px\">" + p.scientific_name + "</span>" : "";
+      var cnt = p.scan_count > 1 ? "<span style=\"float:right;font-size:10px;opacity:0.3\">" + p.scan_count + "x</span>" : "";
+      html += "<div class=\"ac-item\" data-name=\"" + safeName + "\"" +
+        " style=\"padding:11px 16px;cursor:pointer;font-size:13px;color:rgba(240,232,168,0.7);border-bottom:1px solid rgba(240,232,168,0.05)\"" +
+        " onmousedown=\"selectSuggestion(this.dataset.name)\"" +
+        " onmouseover=\"this.style.background='rgba(240,232,168,0.06)'\"" +
+        " onmouseout=\"this.style.background=''\">"+
+        highlighted + sci + cnt + "</div>";
+    });
+    list.innerHTML = html;
+    list.style.display = "block";
   }
-
   function hideAutocomplete() {
     document.getElementById('autocompleteList').style.display = 'none';
     acIndex = -1;
