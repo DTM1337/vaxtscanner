@@ -478,12 +478,32 @@
   var guestMode = false;
 
   // ── INIT ──
+  // Show landing immediately until auth resolves
+  (function() {
+    var landing = document.getElementById('landing');
+    var app = document.getElementById('app');
+    if (landing) landing.style.display = 'block';
+    if (app) app.style.display = 'none';
+  })();
+
+  sb.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) {
+      currentUser = res.data.session.user;
+      showApp();
+    }
+  });
+
   sb.auth.onAuthStateChange(function(event, session) {
     currentUser = session ? session.user : null;
     if (currentUser) {
       if (!guestMode) showApp();
     } else {
-      guestMode = false; showAuthOverlay();
+      guestMode = false;
+      // No session - show landing page, not login overlay
+      document.getElementById('authOverlay').classList.add('hidden');
+      document.getElementById('app').style.display = 'none';
+      var landing = document.getElementById('landing');
+      if (landing) landing.style.display = 'block';
     }
   });
 
