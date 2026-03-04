@@ -479,7 +479,7 @@
   function showAuthOverlay() {
     if (guestMode) return;
     document.getElementById('authOverlay').classList.remove('hidden');
-    document.getElementById('userMenu').style.display = 'none';
+    document.getElementById('userMenuHero').style.display = 'none';
   }
 
   // ── AUTH ──
@@ -544,7 +544,10 @@
 
   async function signOut() {
     await sb.auth.signOut();
+    guestMode = false;
     document.getElementById('userDropdown').classList.remove('open');
+    document.getElementById('userMenuHero').style.display = 'none';
+    document.getElementById('authOverlay').classList.remove('hidden');
   }
 
   function toggleDropdown() {
