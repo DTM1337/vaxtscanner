@@ -530,30 +530,30 @@
   var guestMode = false;
 
   // ── INIT ──
-  // Show landing immediately until auth resolves
-  (function() {
-    var landing = document.getElementById('landing');
-    var app = document.getElementById('app');
-    if (landing) landing.style.display = 'block';
-    if (app) app.style.display = 'none';
-  })();
-
+  // Check session on load - handles OAuth redirects
   sb.auth.getSession().then(function(res) {
     if (res.data && res.data.session) {
       currentUser = res.data.session.user;
       showApp();
+    } else {
+      // No session - show landing
+      var landing = document.getElementById('landing');
+      if (landing) landing.style.display = 'block';
+      document.getElementById('app').style.display = 'none';
     }
   });
 
   sb.auth.onAuthStateChange(function(event, session) {
-    currentUser = session ? session.user : null;
-    if (currentUser) {
+    // Only react to explicit sign in/out events, not INITIAL_SESSION
+    if (event === 'SIGNED_IN') {
+      currentUser = session ? session.user : null;
       if (!guestMode) showApp();
-    } else {
+    } else if (event === 'SIGNED_OUT') {
       guestMode = false;
-      // No session - show landing page, not login overlay
-      document.getElementById('authOverlay').classList.add('hidden');
+      currentUser = null;
       document.getElementById('app').style.display = 'none';
+      document.getElementById('userMenuHero').style.display = 'none';
+      document.getElementById('authOverlay').classList.add('hidden');
       var landing = document.getElementById('landing');
       if (landing) landing.style.display = 'block';
     }
