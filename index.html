@@ -424,13 +424,26 @@
 
 <!-- ── APP ── -->
 <div id="app" style="display:none">
-  <nav class="app-nav">
+  <nav class="app-nav" style="justify-content:space-between;padding-right:12px">
     <div style="display:flex;flex:1">
       <button class="nav-btn active" onclick="showPage('scan', this)">🌿 Scanna</button>
       <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">🌿 Mina växter</button>
       <button class="nav-btn" onclick="showPage('garden', this)" id="gardenNavBtn">🗓️ Min odling</button>
     </div>
-
+    <div class="user-menu" id="userMenuHero" style="display:none;align-items:center;position:relative;z-index:200">
+      <button class="user-btn" id="userBtnHero" onclick="toggleDropdown()" style="font-size:11px;padding:7px 14px;border-radius:100px;background:rgba(240,232,168,0.08);border:1px solid rgba(240,232,168,0.2);color:#f0e8a8;cursor:pointer;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">···</button>
+      <div class="user-dropdown" id="userDropdown">
+        <div class="user-dropdown-item" id="userEmailDisplay" style="opacity:0.5;font-size:11px;cursor:default"></div>
+        <div id="dropdownGuest" style="display:none">
+          <div class="user-dropdown-item" onclick="showLoginOverlay('login');toggleDropdown()">Logga in</div>
+          <div class="user-dropdown-item" onclick="showLoginOverlay('signup');toggleDropdown()">Skapa konto</div>
+          <div class="user-dropdown-item" onclick="goToLanding()">← Startsidan</div>
+        </div>
+        <div id="dropdownUser" style="display:none">
+          <div class="user-dropdown-item danger" onclick="signOut()">Logga ut</div>
+        </div>
+      </div>
+    </div>
   </nav>
 
   <!-- SCAN -->
@@ -568,6 +581,8 @@
     var email = currentUser.email || (currentUser.user_metadata && currentUser.user_metadata.full_name) || 'Användare';
     document.getElementById('userBtnHero').textContent = email;
     document.getElementById('userEmailDisplay').textContent = currentUser.email || '';
+    document.getElementById('dropdownGuest').style.display = 'none';
+    document.getElementById('dropdownUser').style.display = 'block';
     updateHistoryBadge();
   }
 
@@ -591,6 +606,8 @@
     document.getElementById('userMenuHero').style.display = 'flex';
     document.getElementById('userBtnHero').textContent = 'Gäst';
     document.getElementById('userEmailDisplay').textContent = 'Anonym gäst';
+    document.getElementById('dropdownGuest').style.display = 'block';
+    document.getElementById('dropdownUser').style.display = 'none';
     updateHistoryBadge();
   }
 
@@ -665,6 +682,18 @@
       errEl.textContent = error.message;
       errEl.style.display = 'block';
     }
+  }
+
+  function goToLanding() {
+    guestMode = false;
+    currentUser = null;
+    sb.auth.signOut();
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('userMenuHero').style.display = 'none';
+    document.getElementById('userDropdown').classList.remove('open');
+    var landing = document.getElementById('landing');
+    if (landing) landing.style.display = 'block';
+    window.scrollTo(0, 0);
   }
 
   async function signOut() {
