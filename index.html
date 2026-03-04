@@ -273,6 +273,37 @@
   .modal-close { background: none; border: 1px solid var(--border); color: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif; padding: 6px 14px; border-radius: 100px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
   .modal-img { width: 100%; border-radius: 16px; max-height: 260px; object-fit: cover; margin-bottom: 24px; }
 
+  /* GARDEN */
+  .garden-add { display: flex; gap: 10px; margin-bottom: 24px; }
+  .garden-add-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .garden-add-input:focus { border-color: rgba(240,232,168,0.3); }
+  .garden-add-input::placeholder { color: rgba(240,232,168,0.2); }
+  .garden-plant-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s; }
+  .garden-plant-card:hover { border-color: rgba(240,232,168,0.2); }
+  .garden-plant-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; cursor: pointer; }
+  .garden-plant-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); }
+  .garden-plant-type { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.4; margin-top: 3px; }
+  .garden-plant-chevron { color: var(--text); opacity: 0.4; font-size: 12px; transition: transform 0.2s; }
+  .garden-plant-chevron.open { transform: rotate(180deg); }
+  .garden-schedule { display: none; padding: 0 20px 20px; }
+  .garden-schedule.open { display: block; }
+  .garden-months { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .garden-month { border-radius: 12px; padding: 12px 14px; background: rgba(240,232,168,0.03); border: 1px solid rgba(240,232,168,0.06); }
+  .garden-month.active { background: rgba(240,232,168,0.07); border-color: rgba(240,232,168,0.15); }
+  .garden-month.current { border-color: rgba(240,232,168,0.35); background: rgba(240,232,168,0.06); }
+  .garden-month-name { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream); opacity: 0.35; margin-bottom: 5px; }
+  .garden-month.current .garden-month-name { opacity: 0.7; color: var(--cream); }
+  .garden-month-action { font-size: 12px; color: var(--cream); font-weight: 500; margin-bottom: 3px; }
+  .garden-month-tip { font-size: 11px; color: var(--text); opacity: 0.6; line-height: 1.5; }
+  .garden-month-empty { font-size: 11px; color: var(--text); opacity: 0.2; font-style: italic; }
+  .garden-delete-btn { background: none; border: none; color: var(--text); opacity: 0.3; cursor: pointer; font-size: 16px; padding: 4px 8px; transition: opacity 0.2s; }
+  .garden-delete-btn:hover { opacity: 0.8; color: #ffaaaa; }
+  .garden-loading { text-align: center; padding: 20px; }
+  .garden-import { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+  .garden-empty { text-align: center; padding: 80px 0; }
+  .garden-empty-icon { font-size: 52px; margin-bottom: 16px; opacity: 0.3; }
+  .garden-empty-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); opacity: 0.4; margin-bottom: 8px; }
+  .garden-empty-sub { font-size: 13px; color: var(--text); opacity: 0.3; }
   input[type=file] { display: none; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: rgba(240,232,168,0.15); border-radius: 2px; }
@@ -397,6 +428,7 @@
     <div style="display:flex;flex:1">
       <button class="nav-btn active" onclick="showPage('scan', this)">🌿 Scanna</button>
       <button class="nav-btn" onclick="showPage('history', this)" id="historyNavBtn">🌿 Mina växter</button>
+      <button class="nav-btn" onclick="showPage('garden', this)" id="gardenNavBtn">🗓️ Min odling</button>
     </div>
 
   </nav>
@@ -457,6 +489,26 @@
       <button class="clear-btn" onclick="clearHistory()">Rensa allt</button>
     </div>
     <div id="historyList"></div>
+  </div>
+
+  <!-- GARDEN -->
+  <div class="page" id="page-garden">
+    <div class="scan-eyebrow">Din odlingsplan</div>
+    <h2 class="scan-title"><em>Min</em> odling</h2>
+
+    <div class="garden-add">
+      <input type="text" class="garden-add-input" id="gardenInput" placeholder="Lägg till växt, t.ex. Tomat, Gurka, Ros…" autocomplete="off"
+        onkeydown="if(event.key==='Enter') addGardenPlant()"
+        oninput="fetchGardenSuggestions(this.value)">
+      <button class="btn-primary" onclick="addGardenPlant()" style="flex:0;white-space:nowrap;padding:14px 20px">Lägg till</button>
+    </div>
+    <div id="gardenAutocomplete" style="display:none;background:#111;border:1px solid rgba(240,232,168,0.15);border-radius:12px;overflow:hidden;margin-top:-18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
+
+    <div class="garden-import">
+      <button class="clear-btn" onclick="importFromHistory()">↓ Importera från historik</button>
+    </div>
+
+    <div id="gardenList"></div>
   </div>
 </div>
 
@@ -646,6 +698,7 @@
     document.getElementById('page-' + name).classList.add('active');
     btn.classList.add('active');
     if (name === 'history') renderHistory();
+    if (name === 'garden') loadGarden();
     document.getElementById('userDropdown').classList.remove('open');
   }
 
@@ -1020,6 +1073,155 @@
   function closeModal(e) {
     if (e.target === document.getElementById('modalOverlay'))
       document.getElementById('modalOverlay').classList.remove('open');
+  }
+
+  // ── GARDEN ──
+  var gardenPlants = [];
+  var gardenAcIndex = -1;
+
+  async function loadGarden() {
+    if (!currentUser) return;
+    var { data } = await sb.from('garden_plants').select('*').eq('user_id', currentUser.id).order('created_at');
+    gardenPlants = data || [];
+    renderGarden();
+  }
+
+  function renderGarden() {
+    var el = document.getElementById('gardenList');
+    if (!gardenPlants.length) {
+      el.innerHTML = '<div class="garden-empty"><div class="garden-empty-icon">🌱</div><div class="garden-empty-text">Ingen odlingsplan ännu</div><div class="garden-empty-sub">Lägg till växter du planerar att odla</div></div>';
+      return;
+    }
+    el.innerHTML = gardenPlants.map(function(p) { return renderGardenCard(p); }).join('');
+  }
+
+  var MONTHS = ['januari','februari','mars','april','maj','juni','juli','augusti','september','oktober','november','december'];
+  var currentMonth = MONTHS[new Date().getMonth()];
+
+  function renderGardenCard(p) {
+    var schedule = p.schedule || {};
+    var hasAny = Object.values(schedule).some(function(m) { return m.action; });
+    var monthsHtml = MONTHS.map(function(m) {
+      var data = schedule[m] || {};
+      var isCurrent = m === currentMonth;
+      var isActive = !!data.action;
+      var cls = "garden-month" + (isCurrent ? " current" : "") + (isActive ? " active" : "");
+      return "<div class=\"" + cls + "\">"
+        + "<div class=\"garden-month-name\">" + m.charAt(0).toUpperCase() + m.slice(1) + "</div>"
+        + (data.action ? "<div class=\"garden-month-action\">" + data.action + "</div>" : "<div class=\"garden-month-empty\">Vila</div>")
+        + (data.tip ? "<div class=\"garden-month-tip\">" + data.tip + "</div>" : "")
+        + "</div>";
+    }).join("");
+
+    return "<div class=\"garden-plant-card\" id=\"gcard-" + p.id + "\">"
+      + "<div class=\"garden-plant-header\" onclick=\"toggleGardenCard('" + p.id + "')\">"
+      + "<div><div class=\"garden-plant-name\">" + p.common_name + "</div>"
+      + "<div class=\"garden-plant-type\">" + (p.plant_type || "") + "</div></div>"
+      + "<div style=\"display:flex;align-items:center;gap:8px\">"
+      + "<button class=\"garden-delete-btn\" onclick=\"deleteGardenPlant(event,'" + p.id + "')\" >✕</button>"
+      + "<span class=\"garden-plant-chevron\" id=\"chevron-" + p.id + "\">▼</span>"
+      + "</div></div>"
+      + "<div class=\"garden-schedule\" id=\"gsched-" + p.id + "\">"
+      + (hasAny ? "<div class=\"garden-months\">" + monthsHtml + "</div>"
+        : "<div class=\"garden-loading\"><div class=\"spinner\" style=\"width:24px;height:24px;margin:0 auto 8px\"></div><div style=\"font-size:12px;color:var(--text);opacity:0.5\">Genererar odlingsschema…</div></div>")
+      + "</div></div>";
+  }
+
+  function toggleGardenCard(id) {
+    var sched = document.getElementById('gsched-' + id);
+    var chev = document.getElementById('chevron-' + id);
+    var isOpen = sched.classList.contains('open');
+    sched.classList.toggle('open', !isOpen);
+    chev.classList.toggle('open', !isOpen);
+  }
+
+  async function addGardenPlant(nameOverride) {
+    var name = nameOverride || document.getElementById('gardenInput').value.trim();
+    if (!name || !currentUser) return;
+    document.getElementById('gardenInput').value = '';
+    document.getElementById('gardenAutocomplete').style.display = 'none';
+
+    // Check duplicate
+    if (gardenPlants.find(function(p) { return p.common_name.toLowerCase() === name.toLowerCase(); })) {
+      alert(name + ' finns redan i din odlingsplan.');
+      return;
+    }
+
+    // Insert placeholder
+    var { data: inserted } = await sb.from('garden_plants').insert({
+      user_id: currentUser.id,
+      common_name: name,
+      plant_type: '',
+      schedule: {}
+    }).select().single();
+
+    if (!inserted) return;
+    gardenPlants.push(inserted);
+    renderGarden();
+
+    // Fetch schedule from API
+    var res = await fetch('/api/garden', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plantName: name })
+    });
+    var schedData = await res.json();
+    if (schedData.schedule) {
+      await sb.from('garden_plants').update({
+        plant_type: schedData.plantType || '',
+        schedule: schedData.schedule
+      }).eq('id', inserted.id);
+      inserted.plant_type = schedData.plantType || '';
+      inserted.schedule = schedData.schedule;
+      var idx = gardenPlants.findIndex(function(p) { return p.id === inserted.id; });
+      if (idx >= 0) gardenPlants[idx] = inserted;
+      var cardEl = document.getElementById('gcard-' + inserted.id);
+      if (cardEl) cardEl.outerHTML = renderGardenCard(inserted);
+    }
+  }
+
+  async function deleteGardenPlant(e, id) {
+    e.stopPropagation();
+    await sb.from('garden_plants').delete().eq('id', id);
+    gardenPlants = gardenPlants.filter(function(p) { return p.id !== id; });
+    renderGarden();
+  }
+
+  async function importFromHistory() {
+    var { data } = await sb.from('scans').select('plant_data').eq('user_id', currentUser.id);
+    if (!data || !data.length) { alert('Ingen historik att importera.'); return; }
+    var names = [...new Set(data.map(function(s) { return s.plant_data && s.plant_data.commonName; }).filter(Boolean))];
+    var existing = gardenPlants.map(function(p) { return p.common_name.toLowerCase(); });
+    var toAdd = names.filter(function(n) { return !existing.includes(n.toLowerCase()); });
+    if (!toAdd.length) { alert('Alla växter från historiken finns redan i din odlingsplan.'); return; }
+    for (var i = 0; i < toAdd.length; i++) {
+      await addGardenPlant(toAdd[i]);
+    }
+  }
+
+  function selectGardenSuggestion(name) {
+    document.getElementById('gardenInput').value = name;
+    document.getElementById('gardenAutocomplete').style.display = 'none';
+  }
+
+  async function fetchGardenSuggestions(query) {
+    var list = document.getElementById("gardenAutocomplete");
+    if (query.length < 2) { list.style.display = "none"; return; }
+    var { data } = await sb.from("plants").select("common_name, scientific_name").ilike("common_name", "%" + query + "%").limit(5);
+    if (!data || !data.length) { list.style.display = "none"; return; }
+    var html = "";
+    data.forEach(function(p) {
+      var safe = p.common_name.replace(/"/g, "&quot;");
+      var sci = p.scientific_name ? "<span style=\"font-style:italic;opacity:0.35;font-size:11px;margin-left:8px\">" + p.scientific_name + "</span>" : "";
+      var bg = "rgba(240,232,168,0.06)";
+      html += "<div class=\"garden-ac-item\" data-name=\"" + safe + "\" style=\"padding:11px 16px;cursor:pointer;font-size:13px;color:rgba(240,232,168,0.7);border-bottom:1px solid rgba(240,232,168,0.05)\""
+           + " onmousedown=\"selectGardenSuggestion(this.dataset.name)\""
+           + " onmouseover=\"this.style.background=&#39;" + bg + "&#39;\""
+           + " onmouseout=\"this.style.background=&#39;&#39;\">"
+           + p.common_name + sci + "</div>";
+    });
+    list.innerHTML = html;
+    list.style.display = "block";
   }
 
   document.addEventListener('click', function(e) {
