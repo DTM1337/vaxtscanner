@@ -10,10 +10,13 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #080808; --cream: #f0e8a8; --text: rgba(240,232,168,0.6);
-    --border: rgba(240,232,168,0.1); --card: #0f0f0f;
+    --border: rgba(240,232,168,0.1); --card: #0f0f0f; --sidebar: #0a0a0a;
     --green: rgba(74,222,128,0.1); --green-text: #86efac;
+    --red: rgba(255,100,100,0.1); --red-text: #ffaaaa;
   }
   body { background: var(--bg); color: var(--cream); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+
+  /* LOGIN */
   .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
   .login-box { width: 100%; max-width: 340px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 36px 32px; animation: fadeUp 0.4s ease; }
   @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
@@ -25,59 +28,108 @@
   .login-btn { width: 100%; background: var(--cream); color: #080808; border: none; border-radius: 10px; padding: 14px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; margin-top: 4px; }
   .login-btn:hover { background: #fff8c0; }
   .login-error { color: #ffaaaa; font-size: 12px; margin-top: 10px; display: none; }
-  .admin-wrap { display: none; }
-  .topbar { background: #0a0a0a; border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-  .topbar-logo { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--cream); }
-  .topbar-logo span { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-left: 10px; font-family: 'DM Sans', sans-serif; }
+
+  /* LAYOUT */
+  .admin-wrap { display: none; min-height: 100vh; }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { width: 220px; flex-shrink: 0; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--cream); }
+  .sidebar-logo-sub { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.4; margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 12px 8px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--text); transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif; }
+  .nav-item:hover { background: rgba(240,232,168,0.05); color: var(--cream); }
+  .nav-item.active { background: rgba(240,232,168,0.08); color: var(--cream); }
+  .nav-item-icon { font-size: 16px; width: 20px; text-align: center; }
+  .sidebar-footer { padding: 16px 8px; border-top: 1px solid var(--border); }
+
+  /* MAIN */
+  .main { flex: 1; min-width: 0; }
+  .topbar { background: var(--sidebar); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+  .topbar-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 300; color: var(--cream); }
   .topbar-btns { display: flex; gap: 10px; }
   .top-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 7px 14px; border-radius: 100px; cursor: pointer; transition: all 0.2s; }
   .top-btn:hover { border-color: rgba(240,232,168,0.3); color: var(--cream); }
+  .top-btn.primary { background: var(--cream); color: #080808; border-color: var(--cream); font-weight: 600; }
+  .top-btn.primary:hover { background: #fff8c0; }
   .top-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .top-btn.danger:hover { border-color: #ff8888; color: #ffaaaa; }
-  .admin-body { max-width: 1100px; margin: 0 auto; padding: 36px 24px 80px; }
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 36px; }
+  .page-body { padding: 32px 28px 80px; max-width: 1000px; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; }
   .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
   .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 40px; font-weight: 300; color: var(--cream); line-height: 1; margin-bottom: 4px; }
   .stat-lbl { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; }
+
+  /* SECTIONS */
   .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--cream); }
+  .section-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--cream); }
   .section-count { font-size: 11px; color: var(--text); opacity: 0.5; letter-spacing: 1px; }
-  .search-row { margin-bottom: 16px; }
-  .search-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 15px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .search-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 11px 15px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; margin-bottom: 16px; transition: border-color 0.2s; }
   .search-input:focus { border-color: rgba(240,232,168,0.25); }
   .search-input::placeholder { color: rgba(240,232,168,0.2); }
-  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 40px; }
+
+  /* TABLE */
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 32px; }
   .table { width: 100%; border-collapse: collapse; }
   .table th { padding: 13px 18px; text-align: left; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text); opacity: 0.45; font-weight: 500; border-bottom: 1px solid var(--border); }
-  .table td { padding: 14px 18px; font-size: 13px; color: var(--text); border-bottom: 1px solid rgba(240,232,168,0.04); vertical-align: middle; }
+  .table td { padding: 13px 18px; font-size: 13px; color: var(--text); border-bottom: 1px solid rgba(240,232,168,0.04); vertical-align: middle; }
   .table tr:last-child td { border-bottom: none; }
   .table tr:hover td { background: rgba(240,232,168,0.02); }
   .badge { display: inline-block; background: var(--green); color: var(--green-text); font-size: 11px; padding: 3px 10px; border-radius: 100px; font-weight: 500; }
-  .guest-badge { display: inline-block; background: rgba(240,232,168,0.08); color: var(--cream); font-size: 9px; padding: 2px 8px; border-radius: 100px; opacity: 0.5; margin-left: 6px; letter-spacing: 0.5px; }
-  .scan-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid rgba(240,232,168,0.04); transition: background 0.15s; }
+  .badge-off { background: rgba(240,232,168,0.06); color: var(--text); }
+  .guest-badge { display: inline-block; background: rgba(240,232,168,0.08); color: var(--cream); font-size: 9px; padding: 2px 8px; border-radius: 100px; opacity: 0.5; margin-left: 6px; }
+
+  /* SCANS */
+  .scan-row { display: flex; align-items: center; gap: 14px; padding: 13px 18px; border-bottom: 1px solid rgba(240,232,168,0.04); transition: background 0.15s; }
   .scan-row:last-child { border-bottom: none; }
   .scan-row:hover { background: rgba(240,232,168,0.02); }
-  .scan-thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
-  .scan-thumb-placeholder { width: 52px; height: 52px; border-radius: 10px; background: #1a1a0f; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 20px; opacity: 0.4; }
+  .scan-thumb { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+  .scan-thumb-placeholder { width: 48px; height: 48px; border-radius: 10px; background: #1a1a0f; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; opacity: 0.4; }
   .scan-info { flex: 1; min-width: 0; }
-  .scan-name { font-size: 15px; color: var(--cream); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .scan-name { font-size: 14px; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .scan-sci { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 12px; color: var(--text); opacity: 0.5; }
-  .scan-meta { font-size: 11px; color: var(--text); opacity: 0.35; margin-top: 3px; }
-  .scan-user-email { font-size: 11px; color: var(--text); opacity: 0.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; flex-shrink: 0; }
-  .edit-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
-  .edit-btn:hover { border-color: rgba(240,232,168,0.3); color: var(--cream); }
+  .scan-meta { font-size: 11px; color: var(--text); opacity: 0.3; margin-top: 2px; }
+  .scan-user { font-size: 11px; color: var(--text); opacity: 0.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; flex-shrink: 0; }
+  .action-btn { background: none; border: 1px solid var(--border); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 11px; padding: 5px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
+  .action-btn:hover { border-color: rgba(240,232,168,0.3); color: var(--cream); }
+  .action-btn.danger:hover { border-color: #ff8888; color: #ffaaaa; }
+
+  /* ADS */
+  .ad-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 16px; transition: border-color 0.2s; }
+  .ad-card:hover { border-color: rgba(240,232,168,0.15); }
+  .ad-card-info { flex: 1; min-width: 0; }
+  .ad-card-label { font-size: 14px; color: var(--cream); margin-bottom: 4px; }
+  .ad-card-meta { font-size: 11px; color: var(--text); opacity: 0.5; }
+  .ad-stats { display: flex; gap: 16px; flex-shrink: 0; }
+  .ad-stat { text-align: center; }
+  .ad-stat-val { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); }
+  .ad-stat-lbl { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text); opacity: 0.4; }
+
+  /* STORE */
+  .store-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 16px; }
+  .store-name { flex: 1; font-size: 15px; color: var(--cream); }
+  .store-url { font-size: 11px; color: var(--text); opacity: 0.4; margin-top: 3px; }
+
+  /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 24px; backdrop-filter: blur(6px); }
   .modal-overlay.open { display: flex; }
-  .modal { background: #0f0f0f; border: 1px solid var(--border); border-radius: 20px; max-width: 440px; width: 100%; padding: 28px; animation: fadeUp 0.3s ease; }
+  .modal { background: #0f0f0f; border: 1px solid var(--border); border-radius: 20px; max-width: 480px; width: 100%; padding: 28px; animation: fadeUp 0.3s ease; max-height: 90vh; overflow-y: auto; }
   .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 300; color: var(--cream); margin-bottom: 20px; }
-  .modal-thumb { width: 100%; height: 180px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; }
-  .modal-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-bottom: 7px; }
-  .modal-input { width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; margin-bottom: 12px; transition: border-color 0.2s; }
+  .modal-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); opacity: 0.5; margin-bottom: 7px; margin-top: 14px; }
+  .modal-input { width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
   .modal-input:focus { border-color: rgba(240,232,168,0.3); }
-  .modal-btns { display: flex; gap: 10px; margin-top: 8px; }
-  .modal-save { flex: 1; background: var(--cream); color: #080808; border: none; border-radius: 10px; padding: 13px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .modal-select { width: 100%; background: #0a0a0a; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; }
+  .modal-thumb { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .modal-save { flex: 1; background: var(--cream); color: #080808; border: none; border-radius: 10px; padding: 13px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; }
   .modal-save:hover { background: #fff8c0; }
   .modal-cancel { background: none; border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 13px 20px; font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; }
+  .toggle { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .toggle-label { font-size: 13px; color: var(--text); }
+  .toggle input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--cream); cursor: pointer; }
   .loading-row { text-align: center; padding: 40px; color: var(--text); opacity: 0.4; font-size: 13px; }
   .spinner-sm { width: 24px; height: 24px; border: 1.5px solid var(--border); border-top-color: var(--cream); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 10px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -92,8 +144,7 @@
   <div class="login-box">
     <div class="login-title">Admin</div>
     <div class="login-sub">Plant Scan · Kontrollpanel</div>
-    <input class="input" type="password" id="adminPass" placeholder="Lösenord"
-      onkeydown="if(event.key==='Enter') adminLogin()">
+    <input class="input" type="password" id="adminPass" placeholder="Lösenord" onkeydown="if(event.key==='Enter') adminLogin()">
     <button class="login-btn" onclick="adminLogin()">Logga in</button>
     <div class="login-error" id="loginError">Fel lösenord.</div>
   </div>
@@ -101,76 +152,185 @@
 
 <!-- ADMIN -->
 <div class="admin-wrap" id="adminWrap">
-  <div class="topbar">
-    <div class="topbar-logo">Plant Scan <span>Admin</span></div>
-    <div class="topbar-btns">
-      <button class="top-btn" id="refreshBtn" onclick="refreshData()">↻ Uppdatera</button>
-      <button class="top-btn danger" onclick="adminLogout()">Logga ut</button>
-    </div>
-  </div>
+  <div class="layout">
 
-  <div class="admin-body">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-title">Plant Scan</div>
+        <div class="sidebar-logo-sub">Admin</div>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showSection('overview', this)">
+          <span class="nav-item-icon">📊</span> Översikt
+        </button>
+        <button class="nav-item" onclick="showSection('users', this)">
+          <span class="nav-item-icon">👥</span> Användare
+        </button>
+        <button class="nav-item" onclick="showSection('scans', this)">
+          <span class="nav-item-icon">🌿</span> Skanningar
+        </button>
+        <button class="nav-item" onclick="showSection('ads', this)">
+          <span class="nav-item-icon">📢</span> Reklam
+        </button>
+        <button class="nav-item" onclick="showSection('stores', this)">
+          <span class="nav-item-icon">🏪</span> Butiker
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="nav-item" onclick="adminLogout()" style="color:var(--red-text)">
+          <span class="nav-item-icon">↩</span> Logga ut
+        </button>
+      </div>
+    </aside>
 
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-val" id="statUsers">—</div><div class="stat-lbl">Användare</div></div>
-      <div class="stat-card"><div class="stat-val" id="statScans">—</div><div class="stat-lbl">Skanningar totalt</div></div>
-      <div class="stat-card"><div class="stat-val" id="statToday">—</div><div class="stat-lbl">Skanningar idag</div></div>
-    </div>
+    <!-- MAIN -->
+    <div class="main">
+      <div class="topbar">
+        <div class="topbar-title" id="topbarTitle">Översikt</div>
+        <div class="topbar-btns">
+          <button class="top-btn" id="refreshBtn" onclick="refreshData()">↻ Uppdatera</button>
+          <div id="topbarAction"></div>
+        </div>
+      </div>
 
-    <div class="section-header">
-      <div class="section-title">Användare</div>
-      <div class="section-count" id="usersCount"></div>
-    </div>
-    <div class="search-row">
-      <input class="search-input" type="text" id="userSearch" placeholder="Sök e-post…" oninput="filterUsers()">
-    </div>
-    <div class="table-wrap" style="margin-bottom:40px">
-      <table class="table">
-        <thead><tr><th>E-post</th><th>Typ</th><th>Skanningar</th><th>Senaste skanning</th></tr></thead>
-        <tbody id="usersBody"><tr><td colspan="4"><div class="loading-row"><div class="spinner-sm"></div>Laddar…</div></td></tr></tbody>
-      </table>
-    </div>
+      <!-- OVERVIEW -->
+      <div class="page-body" id="section-overview">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-val" id="statUsers">—</div><div class="stat-lbl">Användare</div></div>
+          <div class="stat-card"><div class="stat-val" id="statScans">—</div><div class="stat-lbl">Skanningar totalt</div></div>
+          <div class="stat-card"><div class="stat-val" id="statToday">—</div><div class="stat-lbl">Skanningar idag</div></div>
+        </div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-val" id="statImpressions">—</div><div class="stat-lbl">Annonsvisningar</div></div>
+          <div class="stat-card"><div class="stat-val" id="statClicks">—</div><div class="stat-lbl">Annonsklick</div></div>
+          <div class="stat-card"><div class="stat-val" id="statCTR">—</div><div class="stat-lbl">Klickfrekvens</div></div>
+        </div>
+      </div>
 
-    <div class="section-header">
-      <div class="section-title">Alla skanningar</div>
-      <div class="section-count" id="scansCount"></div>
-    </div>
-    <div class="search-row">
-      <input class="search-input" type="text" id="scanSearch" placeholder="Sök växtnamn eller e-post…" oninput="filterScans()">
-    </div>
-    <div class="table-wrap" id="scansWrap">
-      <div class="loading-row"><div class="spinner-sm"></div>Laddar…</div>
-    </div>
+      <!-- USERS -->
+      <div class="page-body" id="section-users" style="display:none">
+        <div class="section-header">
+          <div class="section-title">Användare</div>
+          <div class="section-count" id="usersCount"></div>
+        </div>
+        <input class="search-input" type="text" id="userSearch" placeholder="Sök e-post…" oninput="filterUsers()">
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>E-post</th><th>Typ</th><th>Skanningar</th><th>Senaste skanning</th></tr></thead>
+            <tbody id="usersBody"><tr><td colspan="4"><div class="loading-row"><div class="spinner-sm"></div>Laddar…</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
 
+      <!-- SCANS -->
+      <div class="page-body" id="section-scans" style="display:none">
+        <div class="section-header">
+          <div class="section-title">Skanningar</div>
+          <div class="section-count" id="scansCount"></div>
+        </div>
+        <input class="search-input" type="text" id="scanSearch" placeholder="Sök växtnamn eller e-post…" oninput="filterScans()">
+        <div class="table-wrap" id="scansWrap">
+          <div class="loading-row"><div class="spinner-sm"></div>Laddar…</div>
+        </div>
+      </div>
+
+      <!-- ADS -->
+      <div class="page-body" id="section-ads" style="display:none">
+        <div class="section-header">
+          <div class="section-title">Reklamlänkar</div>
+          <div class="section-count" id="adsCount"></div>
+        </div>
+        <div id="adsList"><div class="loading-row"><div class="spinner-sm"></div>Laddar…</div></div>
+      </div>
+
+      <!-- STORES -->
+      <div class="page-body" id="section-stores" style="display:none">
+        <div class="section-header">
+          <div class="section-title">Butiker</div>
+          <div class="section-count" id="storesCount"></div>
+        </div>
+        <div id="storesList"><div class="loading-row"><div class="spinner-sm"></div>Laddar…</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- EDIT MODAL -->
-<div class="modal-overlay" id="editModal">
+<!-- EDIT SCAN MODAL -->
+<div class="modal-overlay" id="editScanModal">
   <div class="modal">
     <div class="modal-title">Redigera växt</div>
     <img id="editThumb" class="modal-thumb" src="" style="display:none">
     <div class="modal-label">Svenskt namn</div>
-    <input class="modal-input" type="text" id="editCommonName" placeholder="Växtens namn">
+    <input class="modal-input" type="text" id="editCommonName">
     <div class="modal-label">Latinskt namn</div>
-    <input class="modal-input" type="text" id="editSciName" placeholder="Vetenskapligt namn">
+    <input class="modal-input" type="text" id="editSciName">
     <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeEdit()">Avbryt</button>
-      <button class="modal-save" onclick="saveEdit()">Spara</button>
+      <button class="modal-cancel" onclick="closeModal('editScanModal')">Avbryt</button>
+      <button class="modal-save" onclick="saveEditScan()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- AD MODAL -->
+<div class="modal-overlay" id="adModal">
+  <div class="modal">
+    <div class="modal-title" id="adModalTitle">Ny reklamlänk</div>
+    <div class="modal-label">Butik</div>
+    <select class="modal-select" id="adStore"></select>
+    <div class="modal-label">Etikett</div>
+    <input class="modal-input" type="text" id="adLabel" placeholder="T.ex. Köp Fredskalla hos Blomsterlandet">
+    <div class="modal-label">Växtnamn (lämna tomt för alla växter)</div>
+    <input class="modal-input" type="text" id="adPlant" placeholder="T.ex. Fredskalla">
+    <div class="modal-label">Kategori (lämna tomt för alla)</div>
+    <input class="modal-input" type="text" id="adCategory" placeholder="T.ex. utomhus, inomhus, buske">
+    <div class="modal-label">Månader (kommaseparerat, lämna tomt för hela året)</div>
+    <input class="modal-input" type="text" id="adMonths" placeholder="T.ex. maj,juni,juli">
+    <div class="modal-label">URL (lämna tomt för automatisk söklänk)</div>
+    <input class="modal-input" type="text" id="adUrl" placeholder="https://…">
+    <div class="toggle">
+      <input type="checkbox" id="adActive" checked>
+      <label class="toggle-label" for="adActive">Aktiv</label>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('adModal')">Avbryt</button>
+      <button class="modal-save" onclick="saveAd()">Spara</button>
+    </div>
+  </div>
+</div>
+
+<!-- STORE MODAL -->
+<div class="modal-overlay" id="storeModal">
+  <div class="modal">
+    <div class="modal-title" id="storeModalTitle">Ny butik</div>
+    <div class="modal-label">Namn</div>
+    <input class="modal-input" type="text" id="storeName" placeholder="T.ex. Blomsterlandet">
+    <div class="modal-label">Bas-URL för sökning</div>
+    <input class="modal-input" type="text" id="storeUrl" placeholder="https://www.blomsterlandet.se/search?q=">
+    <div class="modal-label">Logotyp-URL (valfritt)</div>
+    <input class="modal-input" type="text" id="storeLogo" placeholder="https://…">
+    <div class="toggle">
+      <input type="checkbox" id="storeActive" checked>
+      <label class="toggle-label" for="storeActive">Aktiv</label>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('storeModal')">Avbryt</button>
+      <button class="modal-save" onclick="saveStore()">Spara</button>
     </div>
   </div>
 </div>
 
 <script>
   const ADMIN_PASSWORD = 'plantscan2024';
-
   const { createClient } = supabase;
   const sb = createClient(
     'https://qmzwglgksmhhrethzjxd.supabase.co',
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtendnbGdrc21oaHJldGh6anhkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI1NDAzMjMsImV4cCI6MjA4ODExNjMyM30.WNkOCZ5elA8vDe_e1TA2YM56oFkIemognc7NLFS2w7k'
   );
 
-  var allScans = [], allUsers = [], editingId = null;
+  var allScans = [], allUsers = [], allAds = [], allStores = [];
+  var editingScanId = null, editingAdId = null, editingStoreId = null;
+  var currentSection = 'overview';
 
   if (sessionStorage.getItem('psAdmin') === '1') {
     document.getElementById('loginWrap').style.display = 'none';
@@ -179,8 +339,7 @@
   }
 
   function adminLogin() {
-    var pass = document.getElementById('adminPass').value;
-    if (pass === ADMIN_PASSWORD) {
+    if (document.getElementById('adminPass').value === ADMIN_PASSWORD) {
       sessionStorage.setItem('psAdmin', '1');
       document.getElementById('loginWrap').style.display = 'none';
       document.getElementById('adminWrap').style.display = 'block';
@@ -193,37 +352,48 @@
 
   function adminLogout() {
     sessionStorage.removeItem('psAdmin');
-    document.getElementById('loginWrap').style.display = 'flex';
-    document.getElementById('adminWrap').style.display = 'none';
-    document.getElementById('adminPass').value = '';
+    location.reload();
   }
 
-  // Load both independently so each renders as soon as ready
+  function showSection(name, btn) {
+    document.querySelectorAll('.page-body').forEach(function(s) { s.style.display = 'none'; });
+    document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById('section-' + name).style.display = 'block';
+    btn.classList.add('active');
+    currentSection = name;
+
+    var titles = { overview: 'Översikt', users: 'Användare', scans: 'Skanningar', ads: 'Reklam', stores: 'Butiker' };
+    document.getElementById('topbarTitle').textContent = titles[name] || name;
+
+    var actionEl = document.getElementById('topbarAction');
+    if (name === 'ads') {
+      actionEl.innerHTML = '<button class="top-btn primary" onclick="openAdModal()">+ Ny länk</button>';
+    } else if (name === 'stores') {
+      actionEl.innerHTML = '<button class="top-btn primary" onclick="openStoreModal()">+ Ny butik</button>';
+    } else {
+      actionEl.innerHTML = '';
+    }
+  }
+
   function loadData() {
     loadScans();
     loadUsers();
+    loadAds();
+    loadStores();
   }
 
   async function refreshData() {
     var btn = document.getElementById('refreshBtn');
     btn.textContent = '↻ Laddar…';
     btn.disabled = true;
-    document.getElementById('scansWrap').innerHTML = '<div class="loading-row"><div class="spinner-sm"></div>Laddar…</div>';
-    document.getElementById('usersBody').innerHTML = '<tr><td colspan="4"><div class="loading-row"><div class="spinner-sm"></div>Laddar…</div></td></tr>';
-    await Promise.all([loadScans(), loadUsers()]);
+    await Promise.all([loadScans(), loadUsers(), loadAds(), loadStores()]);
     btn.textContent = '↻ Uppdatera';
     btn.disabled = false;
   }
 
   async function loadScans() {
-    var { data, error } = await sb.from('scans')
-      .select('*')
-      .order('scanned_at', { ascending: false });
-    if (error) {
-      console.error('Scans error:', error);
-      document.getElementById('scansWrap').innerHTML = '<div class="loading-row">Fel: ' + error.message + '</div>';
-      return;
-    }
+    var { data, error } = await sb.from('scans').select('*').order('scanned_at', { ascending: false });
+    if (error) { console.error(error); return; }
     allScans = data || [];
     document.getElementById('scansCount').textContent = allScans.length + ' skanningar';
     renderScans(allScans);
@@ -232,144 +402,277 @@
 
   async function loadUsers() {
     var { data, error } = await sb.from('scans').select('user_id, user_email, scanned_at');
-    if (error) { console.error('Users error:', error); return; }
-
-    var userMap = {};
+    if (error) { console.error(error); return; }
+    var map = {};
     (data || []).forEach(function(s) {
-      if (!userMap[s.user_id]) {
-        userMap[s.user_id] = {
-          email: s.user_email || null,
-          count: 0,
-          latest: s.scanned_at,
-          isGuest: !s.user_email || s.user_email === 'Gäst'
-        };
-      }
-      userMap[s.user_id].count++;
-      if (s.scanned_at > userMap[s.user_id].latest) userMap[s.user_id].latest = s.scanned_at;
-      if (s.user_email && s.user_email !== 'Gäst') {
-        userMap[s.user_id].email = s.user_email;
-        userMap[s.user_id].isGuest = false;
-      }
+      if (!map[s.user_id]) map[s.user_id] = { email: s.user_email || null, count: 0, latest: s.scanned_at, isGuest: !s.user_email || s.user_email === 'Gäst' };
+      map[s.user_id].count++;
+      if (s.scanned_at > map[s.user_id].latest) map[s.user_id].latest = s.scanned_at;
+      if (s.user_email && s.user_email !== 'Gäst') { map[s.user_id].email = s.user_email; map[s.user_id].isGuest = false; }
     });
-
-    allUsers = Object.values(userMap);
+    allUsers = Object.values(map);
     document.getElementById('usersCount').textContent = allUsers.length + ' användare';
     renderUsers(allUsers);
     renderStats();
   }
 
+  async function loadAds() {
+    var { data, error } = await sb.from('ads').select('*, stores(name)').order('created_at', { ascending: false });
+    if (error) { console.error(error); return; }
+    allAds = data || [];
+    document.getElementById('adsCount').textContent = allAds.length + ' länkar';
+    renderAds();
+    renderStats();
+  }
+
+  async function loadStores() {
+    var { data, error } = await sb.from('stores').select('*').order('name');
+    if (error) { console.error(error); return; }
+    allStores = data || [];
+    document.getElementById('storesCount').textContent = allStores.length + ' butiker';
+    renderStores();
+  }
+
   function renderStats() {
-    var uniqueUsers = new Set(allScans.map(function(s) { return s.user_id; })).size;
-    document.getElementById('statUsers').textContent = uniqueUsers || allUsers.length || '—';
-    document.getElementById('statScans').textContent = allScans.length || '—';
+    document.getElementById('statUsers').textContent = new Set(allScans.map(function(s) { return s.user_id; })).size || '0';
+    document.getElementById('statScans').textContent = allScans.length || '0';
     var today = new Date().toISOString().split('T')[0];
-    var todayCount = allScans.filter(function(s) { return s.scanned_at && s.scanned_at.startsWith(today); }).length;
-    document.getElementById('statToday').textContent = todayCount || '0';
+    document.getElementById('statToday').textContent = allScans.filter(function(s) { return s.scanned_at && s.scanned_at.startsWith(today); }).length;
+    var imp = allAds.reduce(function(a, ad) { return a + (ad.impressions || 0); }, 0);
+    var clk = allAds.reduce(function(a, ad) { return a + (ad.clicks || 0); }, 0);
+    document.getElementById('statImpressions').textContent = imp || '0';
+    document.getElementById('statClicks').textContent = clk || '0';
+    document.getElementById('statCTR').textContent = imp > 0 ? (clk / imp * 100).toFixed(1) + '%' : '—';
   }
 
   function renderUsers(users) {
     var tbody = document.getElementById('usersBody');
-    if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;opacity:0.4">Inga användare ännu</td></tr>';
-      return;
-    }
+    if (!users.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:32px;opacity:0.4">Inga användare</td></tr>'; return; }
     tbody.innerHTML = users.map(function(u) {
-      var displayEmail = u.isGuest
-        ? ('<span style="opacity:0.4">Anonym</span>')
-        : (u.email || '<span style="opacity:0.4">Okänd</span>');
-      var typeBadge = u.isGuest
-        ? '<span class="guest-badge">gäst</span>'
-        : '<span class="guest-badge" style="background:rgba(74,222,128,0.1);color:#86efac">inloggad</span>';
-      return '<tr>'
-        + '<td style="color:var(--cream)">' + displayEmail + '</td>'
-        + '<td>' + typeBadge + '</td>'
-        + '<td><span class="badge">' + u.count + '</span></td>'
-        + '<td>' + new Date(u.latest).toLocaleDateString('sv-SE') + '</td>'
-        + '</tr>';
+      var email = u.isGuest ? '<span style="opacity:0.4">Anonym</span>' : (u.email || '<span style="opacity:0.4">Okänd</span>');
+      var type = u.isGuest ? '<span class="guest-badge">gäst</span>' : '<span class="badge" style="font-size:10px">inloggad</span>';
+      return '<tr><td style="color:var(--cream)">' + email + '</td><td>' + type + '</td><td><span class="badge">' + u.count + '</span></td><td>' + new Date(u.latest).toLocaleDateString('sv-SE') + '</td></tr>';
     }).join('');
   }
 
   function renderScans(scans) {
     var wrap = document.getElementById('scansWrap');
-    if (!scans.length) {
-      wrap.innerHTML = '<div class="loading-row">Inga skanningar hittades</div>';
-      return;
-    }
+    if (!scans.length) { wrap.innerHTML = '<div class="loading-row">Inga skanningar hittades</div>'; return; }
     wrap.innerHTML = scans.map(function(s) {
       var p = s.plant_data || {};
       var isGuest = !s.user_email || s.user_email === 'Gäst';
-      var email = isGuest ? 'Anonym gäst' : (s.user_email || (s.user_id ? s.user_id.slice(0,8)+'…' : '—'));
+      var email = isGuest ? 'Anonym gäst' : (s.user_email || '—');
       var date = s.scanned_at ? new Date(s.scanned_at).toLocaleDateString('sv-SE', { day:'numeric', month:'short', year:'numeric' }) : '—';
       return '<div class="scan-row">'
         + (s.thumbnail ? '<img class="scan-thumb" src="' + s.thumbnail + '">' : '<div class="scan-thumb-placeholder">🌿</div>')
-        + '<div class="scan-info">'
-        + '<div class="scan-name">' + (p.commonName || 'Okänd') + '</div>'
+        + '<div class="scan-info"><div class="scan-name">' + (p.commonName || 'Okänd') + '</div>'
         + '<div class="scan-sci">' + (p.scientificName || '') + '</div>'
-        + '<div class="scan-meta">' + date + '</div>'
+        + '<div class="scan-meta">' + date + '</div></div>'
+        + '<div class="scan-user">' + email + (isGuest ? ' <span class="guest-badge">gäst</span>' : '') + '</div>'
+        + '<button class="action-btn" onclick="openEditScan(\'' + s.id + '\')">Redigera</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  function renderAds() {
+    var el = document.getElementById('adsList');
+    if (!allAds.length) {
+      el.innerHTML = '<div style="text-align:center;padding:60px;opacity:0.4"><div style="font-size:32px;margin-bottom:12px">📢</div><div>Inga reklamlänkar ännu.<br>Skapa din första länk!</div></div>';
+      return;
+    }
+    el.innerHTML = allAds.map(function(ad) {
+      var storeName = ad.stores ? ad.stores.name : '—';
+      var meta = [storeName, ad.plant_name ? '🌿 ' + ad.plant_name : '', ad.category ? '📁 ' + ad.category : '', ad.months && ad.months.length ? '📅 ' + ad.months.join(', ') : ''].filter(Boolean).join(' · ');
+      return '<div class="ad-card">'
+        + '<div class="ad-card-info">'
+        + '<div class="ad-card-label">' + ad.label + ' ' + (ad.active ? '<span class="badge" style="font-size:10px">aktiv</span>' : '<span class="badge badge-off" style="font-size:10px">pausad</span>') + '</div>'
+        + '<div class="ad-card-meta">' + meta + '</div>'
         + '</div>'
-        + '<div class="scan-user-email">'
-        + email
-        + (isGuest ? ' <span class="guest-badge">gäst</span>' : '')
+        + '<div class="ad-stats">'
+        + '<div class="ad-stat"><div class="ad-stat-val">' + (ad.impressions || 0) + '</div><div class="ad-stat-lbl">Visningar</div></div>'
+        + '<div class="ad-stat"><div class="ad-stat-val">' + (ad.clicks || 0) + '</div><div class="ad-stat-lbl">Klick</div></div>'
         + '</div>'
-        + '<button class="edit-btn" onclick="openEdit(\'' + s.id + '\')">Redigera</button>'
+        + '<button class="action-btn" onclick="openAdModal(\'' + ad.id + '\')">Redigera</button>'
+        + '<button class="action-btn danger" onclick="deleteAd(\'' + ad.id + '\')">Ta bort</button>'
+        + '</div>';
+    }).join('');
+  }
+
+  function renderStores() {
+    var el = document.getElementById('storesList');
+    if (!allStores.length) {
+      el.innerHTML = '<div style="text-align:center;padding:60px;opacity:0.4"><div style="font-size:32px;margin-bottom:12px">🏪</div><div>Inga butiker ännu.</div></div>';
+      return;
+    }
+    el.innerHTML = allStores.map(function(s) {
+      return '<div class="store-card">'
+        + (s.logo_url ? '<img src="' + s.logo_url + '" style="width:40px;height:40px;object-fit:contain;border-radius:8px">' : '<div style="width:40px;height:40px;background:#1a1a0f;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px">🏪</div>')
+        + '<div style="flex:1"><div class="store-name">' + s.name + ' ' + (s.active ? '<span class="badge" style="font-size:10px">aktiv</span>' : '<span class="badge badge-off" style="font-size:10px">inaktiv</span>') + '</div>'
+        + '<div class="store-url">' + s.affiliate_base_url + '</div></div>'
+        + '<button class="action-btn" onclick="openStoreModal(\'' + s.id + '\')">Redigera</button>'
         + '</div>';
     }).join('');
   }
 
   function filterUsers() {
     var q = document.getElementById('userSearch').value.toLowerCase();
-    renderUsers(allUsers.filter(function(u) {
-      return !q || (u.email && u.email.toLowerCase().includes(q)) || (u.isGuest && 'gäst'.includes(q));
-    }));
+    renderUsers(allUsers.filter(function(u) { return !q || (u.email && u.email.toLowerCase().includes(q)) || (u.isGuest && 'gäst'.includes(q)); }));
   }
 
   function filterScans() {
     var q = document.getElementById('scanSearch').value.toLowerCase();
     renderScans(allScans.filter(function(s) {
       var p = s.plant_data || {};
-      return !q
-        || (p.commonName || '').toLowerCase().includes(q)
-        || (p.scientificName || '').toLowerCase().includes(q)
-        || (s.user_email || '').toLowerCase().includes(q)
-        || (q === 'gäst' && (!s.user_email || s.user_email === 'Gäst'));
+      return !q || (p.commonName||'').toLowerCase().includes(q) || (p.scientificName||'').toLowerCase().includes(q) || (s.user_email||'').toLowerCase().includes(q);
     }));
   }
 
-  function openEdit(id) {
+  // ── SCAN EDIT ──
+  function openEditScan(id) {
     var scan = allScans.find(function(s) { return s.id === id; });
     if (!scan) return;
-    editingId = id;
+    editingScanId = id;
     var p = scan.plant_data || {};
     document.getElementById('editCommonName').value = p.commonName || '';
     document.getElementById('editSciName').value = p.scientificName || '';
     var thumb = document.getElementById('editThumb');
-    if (scan.thumbnail) { thumb.src = scan.thumbnail; thumb.style.display = 'block'; }
-    else { thumb.style.display = 'none'; }
-    document.getElementById('editModal').classList.add('open');
+    if (scan.thumbnail) { thumb.src = scan.thumbnail; thumb.style.display = 'block'; } else { thumb.style.display = 'none'; }
+    document.getElementById('editScanModal').classList.add('open');
   }
 
-  function closeEdit() {
-    document.getElementById('editModal').classList.remove('open');
-    editingId = null;
-  }
-
-  async function saveEdit() {
-    if (!editingId) return;
-    var scan = allScans.find(function(s) { return s.id === editingId; });
+  async function saveEditScan() {
+    if (!editingScanId) return;
+    var scan = allScans.find(function(s) { return s.id === editingScanId; });
     if (!scan) return;
     var updated = Object.assign({}, scan.plant_data, {
       commonName: document.getElementById('editCommonName').value.trim(),
       scientificName: document.getElementById('editSciName').value.trim()
     });
-    var { error } = await sb.from('scans').update({ plant_data: updated }).eq('id', editingId);
+    var { error } = await sb.from('scans').update({ plant_data: updated }).eq('id', editingScanId);
     if (error) { alert('Fel: ' + error.message); return; }
     scan.plant_data = updated;
-    closeEdit();
+    closeModal('editScanModal');
     filterScans();
   }
 
-  document.getElementById('editModal').addEventListener('click', function(e) {
-    if (e.target === document.getElementById('editModal')) closeEdit();
+  // ── AD EDIT ──
+  function openAdModal(id) {
+    editingAdId = id || null;
+    document.getElementById('adModalTitle').textContent = id ? 'Redigera länk' : 'Ny reklamlänk';
+
+    // Populate store dropdown
+    var storeSelect = document.getElementById('adStore');
+    storeSelect.innerHTML = allStores.map(function(s) { return '<option value="' + s.id + '">' + s.name + '</option>'; }).join('');
+
+    if (id) {
+      var ad = allAds.find(function(a) { return a.id === id; });
+      if (ad) {
+        storeSelect.value = ad.store_id || '';
+        document.getElementById('adLabel').value = ad.label || '';
+        document.getElementById('adPlant').value = ad.plant_name || '';
+        document.getElementById('adCategory').value = ad.category || '';
+        document.getElementById('adMonths').value = ad.months ? ad.months.join(',') : '';
+        document.getElementById('adUrl').value = ad.url || '';
+        document.getElementById('adActive').checked = ad.active !== false;
+      }
+    } else {
+      document.getElementById('adLabel').value = '';
+      document.getElementById('adPlant').value = '';
+      document.getElementById('adCategory').value = '';
+      document.getElementById('adMonths').value = '';
+      document.getElementById('adUrl').value = '';
+      document.getElementById('adActive').checked = true;
+    }
+    document.getElementById('adModal').classList.add('open');
+  }
+
+  async function saveAd() {
+    var storeId = document.getElementById('adStore').value;
+    var label = document.getElementById('adLabel').value.trim();
+    var plant = document.getElementById('adPlant').value.trim();
+    var category = document.getElementById('adCategory').value.trim();
+    var monthsRaw = document.getElementById('adMonths').value.trim();
+    var url = document.getElementById('adUrl').value.trim();
+    var active = document.getElementById('adActive').checked;
+
+    if (!label) { alert('Ange en etikett.'); return; }
+
+    // If no URL, build auto URL from store
+    if (!url && storeId) {
+      var store = allStores.find(function(s) { return s.id === storeId; });
+      if (store) url = store.affiliate_base_url + encodeURIComponent(plant || label);
+    }
+
+    var months = monthsRaw ? monthsRaw.split(',').map(function(m) { return m.trim(); }) : null;
+    var payload = { store_id: storeId, label: label, plant_name: plant || null, category: category || null, months: months, url: url, active: active };
+
+    var error;
+    if (editingAdId) {
+      var res = await sb.from('ads').update(payload).eq('id', editingAdId);
+      error = res.error;
+    } else {
+      var res = await sb.from('ads').insert(payload);
+      error = res.error;
+    }
+    if (error) { alert('Fel: ' + error.message); return; }
+    closeModal('adModal');
+    await loadAds();
+  }
+
+  async function deleteAd(id) {
+    if (!confirm('Ta bort reklamlänken?')) return;
+    await sb.from('ads').delete().eq('id', id);
+    await loadAds();
+  }
+
+  // ── STORE EDIT ──
+  function openStoreModal(id) {
+    editingStoreId = id || null;
+    document.getElementById('storeModalTitle').textContent = id ? 'Redigera butik' : 'Ny butik';
+    if (id) {
+      var store = allStores.find(function(s) { return s.id === id; });
+      if (store) {
+        document.getElementById('storeName').value = store.name || '';
+        document.getElementById('storeUrl').value = store.affiliate_base_url || '';
+        document.getElementById('storeLogo').value = store.logo_url || '';
+        document.getElementById('storeActive').checked = store.active !== false;
+      }
+    } else {
+      document.getElementById('storeName').value = '';
+      document.getElementById('storeUrl').value = '';
+      document.getElementById('storeLogo').value = '';
+      document.getElementById('storeActive').checked = true;
+    }
+    document.getElementById('storeModal').classList.add('open');
+  }
+
+  async function saveStore() {
+    var name = document.getElementById('storeName').value.trim();
+    var url = document.getElementById('storeUrl').value.trim();
+    var logo = document.getElementById('storeLogo').value.trim();
+    var active = document.getElementById('storeActive').checked;
+    if (!name || !url) { alert('Namn och URL krävs.'); return; }
+    var payload = { name: name, affiliate_base_url: url, logo_url: logo || null, active: active };
+    var error;
+    if (editingStoreId) {
+      var res = await sb.from('stores').update(payload).eq('id', editingStoreId);
+      error = res.error;
+    } else {
+      var res = await sb.from('stores').insert(payload);
+      error = res.error;
+    }
+    if (error) { alert('Fel: ' + error.message); return; }
+    closeModal('storeModal');
+    await loadStores();
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // Close modals on backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(function(el) {
+    el.addEventListener('click', function(e) { if (e.target === el) el.classList.remove('open'); });
   });
 </script>
 </body>
