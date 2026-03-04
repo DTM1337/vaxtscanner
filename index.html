@@ -316,43 +316,83 @@
   </div>
 </div>
 
-<!-- ── HERO ── -->
-<section class="hero" id="hero" style="overflow:visible">
-  <div style="position:absolute;inset:0;z-index:0;overflow:hidden">
-    <img src="header.jpg" alt="Plant Scan" style="width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(0.55) saturate(0.9);">
-    <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(8,8,8,0.2) 0%, rgba(8,8,8,0.15) 50%, rgba(8,8,8,0.85) 100%)"></div>
-  </div>
-  <div class="deco-ring ring-1"></div>
-  <div class="deco-ring ring-2"></div>
-  <div class="deco-ring ring-3"></div>
+<!-- ── LANDING ── -->
+<div id="landing">
 
-  <div class="hero-top">
-    <span class="hero-logo">🌿 Plant Scan</span>
-    <div class="user-menu" id="userMenuHero" style="display:none;align-items:center;position:relative;z-index:200"><button class="user-btn" id="userBtnHero" onclick="toggleDropdown()" style="font-size:11px;padding:7px 14px;border-radius:100px;background:rgba(240,232,168,0.08);border:1px solid rgba(240,232,168,0.2);color:#f0e8a8;cursor:pointer;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">···</button><div class="user-dropdown" id="userDropdown"><div class="user-dropdown-item" id="userEmailDisplay" style="opacity:0.5;font-size:11px;cursor:default"></div><div class="user-dropdown-item danger" onclick="signOut()">Logga ut</div></div></div>
-  </div>
+  <!-- NAV -->
+  <header style="position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 28px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(8,8,8,0.9) 0%,transparent 100%);backdrop-filter:blur(0px)">
+    <span style="font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;color:var(--cream);letter-spacing:-0.5px">🌿 Plant Scan</span>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button onclick="showLoginOverlay('login')" style="background:none;border:1px solid rgba(240,232,168,0.25);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 18px;border-radius:100px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.borderColor='rgba(240,232,168,0.6)'" onmouseout="this.style.borderColor='rgba(240,232,168,0.25)'">Logga in</button>
+      <button onclick="showLoginOverlay('signup')" style="background:var(--cream);border:none;color:#080808;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:8px 18px;border-radius:100px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='#fff8c0'" onmouseout="this.style.background='var(--cream)'">Registrera</button>
+    </div>
+  </header>
 
-  <div class="hero-center">
-    <div class="hero-eyebrow">Botanisk identifiering</div>
-    <h1 class="hero-title">
-      <em>Känner</em><br>
-      <span class="bold">igen</span><br>
-      <em>din växt</em>
-    </h1>
-    <p class="hero-sub">Fotografera en växt och få direkt information om skötsel, vattning och plantering.</p>
-    <a class="hero-cta" href="#app" onclick="scrollToApp()">
-      Skanna nu <span style="font-size:16px;transition:transform 0.2s">→</span>
-    </a>
-  </div>
+  <!-- HERO -->
+  <section style="min-height:100svh;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:0 0 64px">
+    <div style="position:absolute;inset:0;overflow:hidden">
+      <img src="header.jpg" alt="Plant Scan" style="width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(0.5) saturate(0.85)">
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(8,8,8,0.1) 0%, rgba(8,8,8,0.2) 40%, rgba(8,8,8,0.92) 100%)"></div>
+    </div>
+    <div style="position:relative;z-index:1;padding:0 28px;max-width:580px">
+      <div style="font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--cream);opacity:0.5;margin-bottom:16px">Botanisk identifiering · Sverige</div>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(52px,13vw,88px);font-weight:300;line-height:0.92;color:var(--cream);letter-spacing:-1px;margin-bottom:20px"><em>Känner igen</em><br><span style="font-weight:600">din växt</span></h1>
+      <p style="font-size:15px;color:rgba(240,232,168,0.65);line-height:1.65;max-width:340px;margin-bottom:32px;font-weight:300">Fotografera eller skriv in en växt och få direkt skötselinformation anpassad för svenska förhållanden.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button onclick="showLoginOverlay('signup')" style="background:var(--cream);border:none;color:#080808;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;padding:16px 32px;border-radius:100px;cursor:pointer;transition:all 0.25s;letter-spacing:0.5px" onmouseover="this.style.transform='translateY(-2px)';this.style.background='#fff8c0'" onmouseout="this.style.transform='none';this.style.background='var(--cream)'">Kom igång gratis →</button>
+        <button onclick="continueAsGuest()" style="background:rgba(240,232,168,0.08);border:1px solid rgba(240,232,168,0.2);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:16px 28px;border-radius:100px;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(240,232,168,0.12)'" onmouseout="this.style.background='rgba(240,232,168,0.08)'">Testa som gäst</button>
+      </div>
+    </div>
+  </section>
 
-  <div class="hero-bottom">
-    <span>59°20'N · 18°03'E</span>
-    <span>v3.0</span>
-    <span>Sverige</span>
-  </div>
-</section>
+  <!-- HOW IT WORKS -->
+  <section style="padding:80px 28px;max-width:620px;margin:0 auto">
+    <div style="font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--cream);opacity:0.35;margin-bottom:12px;text-align:center">Så fungerar det</div>
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(32px,7vw,52px);font-weight:300;color:var(--cream);text-align:center;margin-bottom:56px;line-height:1.1">Tre enkla steg</h2>
+
+    <div style="display:flex;flex-direction:column;gap:0">
+      <!-- Step 1 -->
+      <div style="display:flex;gap:24px;padding:32px 0;border-bottom:1px solid rgba(240,232,168,0.07)">
+        <div style="flex-shrink:0;width:48px;height:48px;border-radius:50%;border:1px solid rgba(240,232,168,0.15);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--cream);opacity:0.6">1</div>
+        <div>
+          <div style="font-size:18px;color:var(--cream);margin-bottom:8px;font-weight:500">Fotografera eller skriv</div>
+          <div style="font-size:14px;color:rgba(240,232,168,0.55);line-height:1.65">Ta ett kort på din växt eller skriv in vad den heter. Plant Scan identifierar hundratals svenska trädgårds- och krukväxter.</div>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div style="display:flex;gap:24px;padding:32px 0;border-bottom:1px solid rgba(240,232,168,0.07)">
+        <div style="flex-shrink:0;width:48px;height:48px;border-radius:50%;border:1px solid rgba(240,232,168,0.15);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--cream);opacity:0.6">2</div>
+        <div>
+          <div style="font-size:18px;color:var(--cream);margin-bottom:8px;font-weight:500">Få skötselinformation</div>
+          <div style="font-size:14px;color:rgba(240,232,168,0.55);line-height:1.65">Vattning, solbehov, gödsling och beskärning – allt anpassat till svenska årstider och klimat. Inklusive planteringstider och frostvarningar.</div>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div style="display:flex;gap:24px;padding:32px 0">
+        <div style="flex-shrink:0;width:48px;height:48px;border-radius:50%;border:1px solid rgba(240,232,168,0.15);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--cream);opacity:0.6">3</div>
+        <div>
+          <div style="font-size:18px;color:var(--cream);margin-bottom:8px;font-weight:500">Spara dina växter</div>
+          <div style="font-size:14px;color:rgba(240,232,168,0.55);line-height:1.65">Skapa ett konto och bygg upp din egen växtsamling. Alla skanningar sparas i din historik så du alltid hittar tillbaka.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <section style="padding:64px 28px 80px;text-align:center;border-top:1px solid rgba(240,232,168,0.07)">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-size:clamp(28px,6vw,44px);font-weight:300;color:var(--cream);margin-bottom:12px">Redo att identifiera<br><em>din första växt?</em></h2>
+    <p style="font-size:13px;color:rgba(240,232,168,0.4);margin-bottom:32px">Gratis att använda · Inga kort krävs</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <button onclick="showLoginOverlay('signup')" style="background:var(--cream);border:none;color:#080808;font-family:'Nunito',sans-serif;font-weight:900;font-size:13px;padding:16px 32px;border-radius:100px;cursor:pointer;transition:all 0.25s" onmouseover="this.style.background='#fff8c0'" onmouseout="this.style.background='var(--cream)'">Skapa konto →</button>
+      <button onclick="continueAsGuest()" style="background:none;border:1px solid rgba(240,232,168,0.2);color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;padding:16px 28px;border-radius:100px;cursor:pointer" onmouseover="this.style.borderColor='rgba(240,232,168,0.4)'" onmouseout="this.style.borderColor='rgba(240,232,168,0.2)'">Fortsätt som gäst</button>
+    </div>
+    <div style="margin-top:48px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(240,232,168,0.2)">Plant Scan · Sverige · 59°20'N 18°03'E</div>
+  </section>
+
+</div>
 
 <!-- ── APP ── -->
-<div id="app">
+<div id="app" style="display:none">
   <nav class="app-nav">
     <div style="display:flex;flex:1">
       <button class="nav-btn active" onclick="showPage('scan', this)">🌿 Scanna</button>
@@ -449,6 +489,9 @@
 
   function showApp() {
     document.getElementById('authOverlay').classList.add('hidden');
+    var landing = document.getElementById('landing');
+    if (landing) landing.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
     document.getElementById('userMenuHero').style.display = 'flex';
     var email = currentUser.email || (currentUser.user_metadata && currentUser.user_metadata.full_name) || 'Användare';
     document.getElementById('userBtnHero').textContent = email;
@@ -470,10 +513,20 @@
     }
     currentUser = result.data.user;
     document.getElementById('authOverlay').classList.add('hidden');
+    var landing = document.getElementById('landing');
+    if (landing) landing.style.display = 'none';
+    document.getElementById('app').style.display = 'block';
     document.getElementById('userMenuHero').style.display = 'flex';
     document.getElementById('userBtnHero').textContent = 'Gäst';
     document.getElementById('userEmailDisplay').textContent = 'Anonym gäst';
     updateHistoryBadge();
+  }
+
+  function showLoginOverlay(mode) {
+    switchTab(mode || "login");
+    document.getElementById("authOverlay").classList.remove("hidden");
+    // Hide landing page
+    document.getElementById("landing").style.display = "none";
   }
 
   function showAuthOverlay() {
@@ -547,7 +600,9 @@
     guestMode = false;
     document.getElementById('userDropdown').classList.remove('open');
     document.getElementById('userMenuHero').style.display = 'none';
-    document.getElementById('authOverlay').classList.remove('hidden');
+    document.getElementById('app').style.display = 'none';
+    var landing = document.getElementById('landing');
+    if (landing) landing.style.display = 'block';
   }
 
   function toggleDropdown() {
@@ -563,9 +618,6 @@
 
   // ── HERO ──
 
-  function scrollToApp() {
-    document.getElementById('app').scrollIntoView({ behavior: 'smooth' });
-  }
 
   // ── PAGE NAV ──
   function showPage(name, btn) {
