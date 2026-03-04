@@ -236,6 +236,13 @@
   .fun-fact-icon { font-size: 18px; flex-shrink: 0; }
   .fun-fact-lbl { font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--cream); opacity: 0.4; margin-bottom: 6px; }
   .fun-fact-text { font-size: 13px; color: var(--text); line-height: 1.65; }
+  .ad-banner { display: flex; align-items: center; justify-content: space-between; gap: 14px; background: rgba(240,232,168,0.03); border: 1px solid rgba(240,232,168,0.1); border-radius: 16px; padding: 16px 18px; margin-top: 10px; text-decoration: none; transition: border-color 0.2s, background 0.2s; }
+  .ad-banner:hover { border-color: rgba(240,232,168,0.2); background: rgba(240,232,168,0.05); }
+  .ad-banner-left { flex: 1; min-width: 0; }
+  .ad-banner-tag { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream); opacity: 0.3; margin-bottom: 5px; }
+  .ad-banner-label { font-size: 13px; color: var(--cream); }
+  .ad-banner-store { font-size: 11px; color: var(--text); opacity: 0.5; margin-top: 2px; }
+  .ad-banner-arrow { font-size: 16px; color: var(--cream); opacity: 0.4; flex-shrink: 0; }
 
   /* HISTORY */
   .hist-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--text); opacity: 0.4; margin-bottom: 8px; }
@@ -698,6 +705,7 @@
       await saveToHistory(data, imgDataUrl);
       document.getElementById('result').style.display = 'block';
       document.getElementById('result').innerHTML = renderResult(data);
+      showAdForPlant(data);
     } catch(err) {
       document.getElementById('errorBox').style.display = 'block';
       document.getElementById('errorBox').textContent = '⚠️ ' + err.message;
@@ -727,6 +735,7 @@
       await saveToHistory(data, null);
       document.getElementById('result').style.display = 'block';
       document.getElementById('result').innerHTML = renderResult(data);
+      showAdForPlant(data);
     } catch(err) {
       document.getElementById('errorBox').style.display = 'block';
       document.getElementById('errorBox').textContent = '⚠️ ' + err.message;
@@ -762,6 +771,61 @@
       + (p.tip ? '<div class="tip"><span class="tip-icon">💡</span><div class="tip-text">' + p.tip + '</div></div>' : '')
       + (p.funFact ? '<div class="fun-fact"><span class="fun-fact-icon">🌿</span><div class="fun-fact-text"><div class="fun-fact-lbl">Visste du att...</div>' + p.funFact + '</div></div>' : '')
       + '</div>';
+  }
+
+  // ── ADS ──
+  async function showAdForPlant(plant) {
+    if (!plant || !plant.commonName) return;
+    var month = new Date().toLocaleString("sv-SE", { month: "long" });
+    var isOutdoor = plant.isOutdoor !== false;
+
+    // Fetch all active ads
+    var { data: ads } = await sb.from("ads")
+      .select("*, stores(name, affiliate_base_url)")
+      .eq("active", true);
+    if (!ads || !ads.length) return;
+
+    // Score each ad by relevance
+    var scored = ads.map(function(ad) {
+      var score = 0;
+      if (ad.plant_name && plant.commonName.toLowerCase().includes(ad.plant_name.toLowerCase())) score += 10;
+      if (ad.plant_name && plant.scientificName && plant.scientificName.toLowerCase().includes(ad.plant_name.toLowerCase())) score += 8;
+      if (ad.category === "utomhus" && isOutdoor) score += 3;
+      if (ad.category === "inomhus" && !isOutdoor) score += 3;
+      if (!ad.plant_name && !ad.category) score += 1; // fallback
+      if (ad.months && ad.months.includes(month)) score += 2;
+      return { ad: ad, score: score };
+    }).filter(function(s) { return s.score > 0; });
+
+    if (!scored.length) return;
+    scored.sort(function(a, b) { return b.score - a.score; });
+    var best = scored[0].ad;
+
+    // Build URL
+    var url = best.url;
+    if (!url && best.stores) url = best.stores.affiliate_base_url + encodeURIComponent(plant.commonName);
+    if (!url) return;
+
+    // Log impression
+    sb.from("ads").update({ impressions: (best.impressions || 0) + 1 }).eq("id", best.id);
+
+    // Render ad
+    var storeName = best.stores ? best.stores.name : "";
+    var adHtml = "<a class=\"ad-banner\" href=\"" + url + "\" target=\"_blank\" rel=\"noopener\" onclick=\"trackAdClick('" + best.id + "')\">" +
+      "<div class=\"ad-banner-left\">" +
+      "<div class=\"ad-banner-tag\">Annons</div>" +
+      "<div class=\"ad-banner-label\">" + best.label + "</div>" +
+      (storeName ? "<div class=\"ad-banner-store\">" + storeName + "</div>" : "") +
+      "</div><div class=\"ad-banner-arrow\">→</div></a>";
+
+    var result = document.getElementById("result");
+    result.insertAdjacentHTML("beforeend", adHtml);
+  }
+
+  async function trackAdClick(adId) {
+    var ad = null;
+    var { data } = await sb.from("ads").select("clicks").eq("id", adId).single();
+    if (data) sb.from("ads").update({ clicks: (data.clicks || 0) + 1 }).eq("id", adId);
   }
 
   // ── HISTORY (Supabase) ──
