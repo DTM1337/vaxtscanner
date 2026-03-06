@@ -1358,6 +1358,9 @@
 
   async function deleteGardenPlant(e, id) {
     e.stopPropagation();
+    var plant = gardenPlants.find(function(p) { return p.id === id; });
+    var name = plant ? plant.common_name : 'växten';
+    if (!confirm('Ta bort ' + name + ' från din odlingsplan?')) return;
     await sb.from('garden_plants').delete().eq('id', id);
     gardenPlants = gardenPlants.filter(function(p) { return p.id !== id; });
     renderGarden();
