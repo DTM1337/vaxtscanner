@@ -320,9 +320,7 @@
   .cal-activity-info { flex: 1; }
   .cal-activity-action { font-size: 13px; color: var(--cream); font-weight: 500; margin-bottom: 2px; }
   .cal-activity-tip { font-size: 11px; color: var(--text); opacity: 0.5; line-height: 1.5; }
-  .seed-toggle { display: none; margin-bottom: 14px; }
-  .seed-toggle.visible { display: flex; }
-  .seed-segment { display: inline-flex; background: rgba(240,232,168,0.04); border: 1px solid rgba(240,232,168,0.1); border-radius: 100px; padding: 3px; gap: 2px; }
+  .seed-segment { display: inline-flex; background: rgba(240,232,168,0.04); border: 1px solid rgba(240,232,168,0.1); border-radius: 100px; padding: 3px; gap: 2px; flex-shrink: 0; }
   .seed-btn { padding: 7px 14px; border-radius: 100px; border: none; background: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.18s; white-space: nowrap; }
   .seed-btn:hover { color: var(--cream); }
   .seed-btn.selected { background: rgba(240,232,168,0.12); color: var(--cream); font-weight: 600; border: 1px solid rgba(240,232,168,0.25); }
@@ -540,17 +538,14 @@
     <div class="garden-add">
       <input type="text" class="garden-add-input" id="gardenInput" placeholder="Lägg till växt, t.ex. Tomat, Gurka, Ros…" autocomplete="off"
         onkeydown="if(event.key==='Enter') addGardenPlant()"
-        oninput="fetchGardenSuggestions(this.value); document.getElementById('seedToggle').classList.toggle('visible', this.value.length > 0)">
-      <button class="btn-primary" onclick="addGardenPlant()" style="flex:0;white-space:nowrap;padding:14px 20px">Lägg till</button>
-    </div>
-    <div class="seed-toggle" id="seedToggle">
-      <div class="seed-segment">
+        oninput="fetchGardenSuggestions(this.value)">
+      <div class="seed-segment" id="seedToggle">
         <button class="seed-btn" id="seedBtnFro" onclick="selectSeedType('fro')">🌱 Frö</button>
         <button class="seed-btn" id="seedBtnPlanta" onclick="selectSeedType('planta')">🪴 Planta</button>
         <button class="seed-btn selected" id="seedBtnVet" onclick="selectSeedType('vet_ej')">🤷 Vet ej</button>
       </div>
+      <button class="btn-primary" onclick="addGardenPlant()" style="flex:0;white-space:nowrap;padding:14px 20px">Lägg till</button>
     </div>
-
     <div id="gardenAutocomplete" style="display:none;background:#111;border:1px solid rgba(240,232,168,0.15);border-radius:12px;overflow:hidden;margin-top:-18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
 
     <div class="garden-import">
@@ -1301,7 +1296,6 @@
     if (!name || !currentUser) return;
     document.getElementById('gardenInput').value = '';
     document.getElementById('gardenAutocomplete').style.display = 'none';
-    document.getElementById('seedToggle').classList.remove('visible');
 
     // Check duplicate
     if (gardenPlants.find(function(p) { return p.common_name.toLowerCase() === name.toLowerCase(); })) {
