@@ -1208,7 +1208,13 @@
       var isActive = m === selectedCalMonth;
       var cls = 'cal-month-btn' + (isActive ? ' active' : '') + (hasActivity ? ' has-activity' : '');
       var label = m.charAt(0).toUpperCase() + m.slice(1, 3);
-      return '<button class="' + cls + '" onclick="selectCalMonth(\x27' + m + '\x27)">' + label + '</button>';
+      var emojis = gardenPlants
+        .filter(function(p) { return p.schedule && p.schedule[m] && p.schedule[m].action; })
+        .map(function(p) { return getPlantEmoji(p.common_name); });
+      // Deduplicate emojis
+      var uniqueEmojis = emojis.filter(function(e, i) { return emojis.indexOf(e) === i; }).slice(0, 3);
+      var emojiHtml = uniqueEmojis.length ? '<span style="font-size:11px;display:block;line-height:1;margin-bottom:3px">' + uniqueEmojis.join('') + '</span>' : '';
+      return '<button class="' + cls + '" onclick="selectCalMonth(\x27' + m + '\x27)" style="padding:8px 12px;text-align:center">' + emojiHtml + label + '</button>';
     }).join('');
 
     // Scroll active month into view
