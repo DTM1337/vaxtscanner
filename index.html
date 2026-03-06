@@ -304,6 +304,13 @@
   .garden-empty-icon { font-size: 52px; margin-bottom: 16px; opacity: 0.3; }
   .garden-empty-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--cream); opacity: 0.4; margin-bottom: 8px; }
   .garden-empty-sub { font-size: 13px; color: var(--text); opacity: 0.3; }
+  /* REMINDER BANNER */
+  .reminder-banner { background: rgba(240,232,168,0.06); border: 1px solid rgba(240,232,168,0.2); border-radius: 16px; padding: 16px 18px; margin-bottom: 20px; display: flex; gap: 14px; align-items: flex-start; }
+  .reminder-banner-icon { font-size: 22px; flex-shrink: 0; }
+  .reminder-banner-title { font-size: 13px; color: var(--cream); font-weight: 600; margin-bottom: 6px; }
+  .reminder-banner-items { display: flex; flex-direction: column; gap: 4px; }
+  .reminder-banner-item { font-size: 12px; color: var(--text); opacity: 0.7; }
+
   /* OVERVIEW CALENDAR */
   .cal-months { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 20px; scrollbar-width: none; }
   .cal-months::-webkit-scrollbar { display: none; }
@@ -528,6 +535,9 @@
   <div class="page" id="page-garden">
     <div class="scan-eyebrow">Din odlingsplan</div>
     <h2 class="scan-title"><em>Min</em> odling</h2>
+
+    <!-- REMINDER BANNER -->
+    <div class="reminder-banner" id="gardenReminders" style="display:none"></div>
 
     <!-- OVERVIEW CALENDAR -->
     <div class="cal-months" id="calMonthsRow"></div>
@@ -1148,9 +1158,32 @@
 
   async function loadGarden() {
     if (!currentUser) return;
+    await loadGardenAds();
     var { data } = await sb.from('garden_plants').select('*').eq('user_id', currentUser.id).order('created_at');
     gardenPlants = data || [];
     renderGarden();
+  }
+
+  function renderReminders() {
+    var el = document.getElementById('gardenReminders');
+    if (!el || !gardenPlants.length) { if (el) el.style.display = 'none'; return; }
+
+    // Find activities for current month
+    var activities = gardenPlants.filter(function(p) {
+      return p.schedule && p.schedule[currentMonth] && p.schedule[currentMonth].action;
+    });
+
+    if (!activities.length) { el.style.display = 'none'; return; }
+
+    var monthLabel = currentMonth.charAt(0).toUpperCase() + currentMonth.slice(1);
+    var itemsHtml = activities.map(function(p) {
+      return '<div class="reminder-banner-item">' + getPlantEmoji(p.common_name) + ' <strong>' + p.common_name + '</strong> – ' + p.schedule[currentMonth].action + '</div>';
+    }).join('');
+
+    el.innerHTML = '<div class="reminder-banner-icon">🗓️</div>'
+      + '<div><div class="reminder-banner-title">Det här bör du göra i ' + monthLabel + '</div>'
+      + '<div class="reminder-banner-items">' + itemsHtml + '</div></div>';
+    el.style.display = 'flex';
   }
 
   var selectedCalMonth = null;
@@ -1246,6 +1279,7 @@
   }
 
   function renderGarden() {
+    renderReminders();
     renderCalendar();
     var el = document.getElementById('gardenList');
     if (!gardenPlants.length) {
@@ -1286,7 +1320,9 @@
       + (hasAny ? "<div class=\"garden-months\">" + monthsHtml + "</div>"
         : p._error ? "<div style=\"padding:16px;font-size:12px;color:#ffaaaa;opacity:0.7\">⚠️ " + p._error + "</div>"
         : "<div class=\"garden-loading\"><div class=\"spinner\" style=\"width:24px;height:24px;margin:0 auto 8px\"></div><div style=\"font-size:12px;color:var(--text);opacity:0.5\">Genererar odlingsschema…</div></div>")
-      + "</div></div>";
+      + "</div>"
+      + renderGardenAd(p.common_name)
+      + "</div>";
   }
 
   function toggleGardenCard(id) {
@@ -1402,6 +1438,37 @@
     for (var i = 0; i < toAdd.length; i++) {
       await addGardenPlant(toAdd[i]);
     }
+  }
+
+  async function loadGardenAds() {
+    var { data } = await sb.from('ads').select('*, stores(name, affiliate_base_url)').eq('active', true);
+    window._gardenAds = data || [];
+  }
+
+  function renderGardenAd(plantName) {
+    var ads = window._gardenAds || [];
+    if (!ads.length) return '';
+    var month = currentMonth;
+    var scored = ads.map(function(ad) {
+      var score = 0;
+      if (ad.plant_name && plantName.toLowerCase().includes(ad.plant_name.toLowerCase())) score += 10;
+      if (!ad.plant_name && !ad.category) score += 1;
+      if (ad.months && ad.months.includes(month)) score += 2;
+      return { ad: ad, score: score };
+    }).filter(function(s) { return s.score > 0; });
+    if (!scored.length) return '';
+    scored.sort(function(a, b) { return b.score - a.score; });
+    var best = scored[0].ad;
+    var url = best.url;
+    if (!url && best.stores) url = best.stores.affiliate_base_url + encodeURIComponent(plantName);
+    if (!url) return '';
+    var storeName = best.stores ? best.stores.name : '';
+    sb.from('ads').update({ impressions: (best.impressions || 0) + 1 }).eq('id', best.id);
+    return '<a class="ad-banner" href="' + url + '" target="_blank" rel="noopener" onclick="trackAdClick(\x27' + best.id + '\x27)" style="margin:0 20px 20px;display:flex">'
+      + '<div class="ad-banner-left"><div class="ad-banner-tag">Annons</div>'
+      + '<div class="ad-banner-label">' + best.label + '</div>'
+      + (storeName ? '<div class="ad-banner-store">' + storeName + '</div>' : '')
+      + '</div><div class="ad-banner-arrow">→</div></a>';
   }
 
   function selectSeedType(type) {
