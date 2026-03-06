@@ -1166,6 +1166,32 @@
 
   var selectedCalMonth = null;
 
+  var PLANT_EMOJIS = {
+    'gurka': '🥒', 'tomat': '🍅', 'jordgubbe': '🍓', 'jordgubbar': '🍓',
+    'hallon': '🫐', 'blåbär': '🫐', 'vinbär': '🍇', 'krusbär': '🍇',
+    'äpple': '🍎', 'päron': '🍐', 'plommon': '🫐', 'körsbär': '🍒',
+    'morot': '🥕', 'potatis': '🥔', 'lök': '🧅', 'vitlök': '🧄',
+    'broccoli': '🥦', 'sallad': '🥬', 'spenat': '🥬', 'kål': '🥦',
+    'paprika': '🫑', 'chili': '🌶️', 'majs': '🌽', 'pumpa': '🎃',
+    'zucchini': '🥒', 'squash': '🥒', 'böna': '🫘', 'ärta': '🫛',
+    'ros': '🌹', 'tulpan': '🌷', 'solros': '🌻', 'lavendel': '💜',
+    'dahlia': '🌸', 'pelargon': '🌸', 'krysantemum': '🌼',
+    'fredskalla': '🌿', 'monstera': '🌿', 'orkidé': '🌸',
+    'basilika': '🌿', 'persilja': '🌿', 'dill': '🌿', 'mynta': '🌿',
+    'rosmarin': '🌿', 'timjan': '🌿', 'oregano': '🌿',
+    'jordärtskocka': '🌻', 'rödbetor': '🔴', 'rädisor': '🔴',
+    'fläder': '🌸', 'syren': '🌸', 'hortensia': '🌸',
+  };
+
+  function getPlantEmoji(name) {
+    if (!name) return '🌿';
+    var lower = name.toLowerCase();
+    for (var key in PLANT_EMOJIS) {
+      if (lower.includes(key)) return PLANT_EMOJIS[key];
+    }
+    return '🌿';
+  }
+
   function renderCalendar() {
     var monthsRow = document.getElementById('calMonthsRow');
     var overview = document.getElementById('calOverview');
@@ -1220,7 +1246,7 @@
       html += activities.map(function(p) {
         var m = p.schedule[month];
         return '<div class="cal-activity-row">'
-          + '<div class="cal-activity-plant">' + p.common_name + '</div>'
+          + '<div class="cal-activity-plant"><span style="font-size:18px;display:block;margin-bottom:3px">' + getPlantEmoji(p.common_name) + '</span>' + p.common_name + '</div>'
           + '<div class="cal-activity-info">'
           + '<div class="cal-activity-action">' + m.action + '</div>'
           + (m.tip ? '<div class="cal-activity-tip">' + m.tip + '</div>' : '')
