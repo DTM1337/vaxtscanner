@@ -275,7 +275,7 @@
 
   /* GARDEN */
   .garden-add { display: flex; gap: 10px; margin-bottom: 24px; }
-  .garden-add-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+  .garden-add-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
   .garden-add-input:focus { border-color: rgba(240,232,168,0.3); }
   .garden-add-input::placeholder { color: rgba(240,232,168,0.2); }
   .garden-plant-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; margin-bottom: 12px; overflow: hidden; transition: border-color 0.2s; }
@@ -535,16 +535,22 @@
 
     <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--cream);opacity:0.3;margin-bottom:16px;margin-top:8px">Dina växter</div>
 
-    <div class="garden-add">
+    <div style="margin-bottom:8px">
       <input type="text" class="garden-add-input" id="gardenInput" placeholder="Lägg till växt, t.ex. Tomat, Gurka, Ros…" autocomplete="off"
         onkeydown="if(event.key==='Enter') addGardenPlant()"
-        oninput="fetchGardenSuggestions(this.value)">
-      <div class="seed-segment" id="seedToggle">
-        <button class="seed-btn" id="seedBtnFro" onclick="selectSeedType('fro')">🌱 Frö</button>
-        <button class="seed-btn" id="seedBtnPlanta" onclick="selectSeedType('planta')">🪴 Planta</button>
-        <button class="seed-btn selected" id="seedBtnVet" onclick="selectSeedType('vet_ej')">🤷 Vet ej</button>
+        oninput="fetchGardenSuggestions(this.value)"
+        style="width:100%;margin-bottom:0">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--cream);opacity:0.35;margin-bottom:8px">Jag vill odla från:</div>
+        <div class="seed-segment" id="seedToggle">
+          <button class="seed-btn" id="seedBtnFro" onclick="selectSeedType('fro')">🌱 Frö</button>
+          <button class="seed-btn" id="seedBtnPlanta" onclick="selectSeedType('planta')">🪴 Planta</button>
+          <button class="seed-btn selected" id="seedBtnVet" onclick="selectSeedType('vet_ej')">🤷 Vet ej</button>
+        </div>
       </div>
-      <button class="btn-primary" onclick="addGardenPlant()" style="flex:0;white-space:nowrap;padding:14px 20px">Lägg till</button>
+      <button class="btn-primary" onclick="addGardenPlant()" style="white-space:nowrap;padding:14px 24px;flex-shrink:0">Lägg till</button>
     </div>
     <div id="gardenAutocomplete" style="display:none;background:#111;border:1px solid rgba(240,232,168,0.15);border-radius:12px;overflow:hidden;margin-top:-18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
 
