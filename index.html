@@ -320,14 +320,12 @@
   .cal-activity-info { flex: 1; }
   .cal-activity-action { font-size: 13px; color: var(--cream); font-weight: 500; margin-bottom: 2px; }
   .cal-activity-tip { font-size: 11px; color: var(--text); opacity: 0.5; line-height: 1.5; }
-  .seed-toggle { display: none; gap: 8px; margin-bottom: 16px; margin-top: -8px; }
+  .seed-toggle { display: none; margin-bottom: 14px; }
   .seed-toggle.visible { display: flex; }
-  .seed-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid rgba(240,232,168,0.15); background: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; text-align: center; }
-  .seed-btn:hover { border-color: rgba(240,232,168,0.3); color: var(--cream); }
-  .seed-btn.selected { background: rgba(240,232,168,0.1); border-color: rgba(240,232,168,0.4); color: var(--cream); }
-  .seed-btn-icon { font-size: 22px; display: block; margin-bottom: 6px; }
-  .seed-btn-label { font-weight: 600; display: block; margin-bottom: 2px; }
-  .seed-btn-sub { font-size: 11px; opacity: 0.5; display: block; }
+  .seed-segment { display: inline-flex; background: rgba(240,232,168,0.04); border: 1px solid rgba(240,232,168,0.1); border-radius: 100px; padding: 3px; gap: 2px; }
+  .seed-btn { padding: 7px 14px; border-radius: 100px; border: none; background: none; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.18s; white-space: nowrap; }
+  .seed-btn:hover { color: var(--cream); }
+  .seed-btn.selected { background: rgba(240,232,168,0.12); color: var(--cream); font-weight: 600; border: 1px solid rgba(240,232,168,0.25); }
   input[type=file] { display: none; }
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-thumb { background: rgba(240,232,168,0.15); border-radius: 2px; }
@@ -546,21 +544,11 @@
       <button class="btn-primary" onclick="addGardenPlant()" style="flex:0;white-space:nowrap;padding:14px 20px">Lägg till</button>
     </div>
     <div class="seed-toggle" id="seedToggle">
-      <button class="seed-btn" id="seedBtnFro" onclick="selectSeedType('fro')">
-        <span class="seed-btn-icon">🌱</span>
-        <span class="seed-btn-label">Frö</span>
-        <span class="seed-btn-sub">Så inomhus</span>
-      </button>
-      <button class="seed-btn" id="seedBtnPlanta" onclick="selectSeedType('planta')">
-        <span class="seed-btn-icon">🪴</span>
-        <span class="seed-btn-label">Planta</span>
-        <span class="seed-btn-sub">Köp färdig planta</span>
-      </button>
-      <button class="seed-btn" id="seedBtnVet" onclick="selectSeedType('vet_ej')">
-        <span class="seed-btn-icon">🤷</span>
-        <span class="seed-btn-label">Vet ej</span>
-        <span class="seed-btn-sub">Anpassa automatiskt</span>
-      </button>
+      <div class="seed-segment">
+        <button class="seed-btn" id="seedBtnFro" onclick="selectSeedType('fro')">🌱 Frö</button>
+        <button class="seed-btn" id="seedBtnPlanta" onclick="selectSeedType('planta')">🪴 Planta</button>
+        <button class="seed-btn selected" id="seedBtnVet" onclick="selectSeedType('vet_ej')">🤷 Vet ej</button>
+      </div>
     </div>
 
     <div id="gardenAutocomplete" style="display:none;background:#111;border:1px solid rgba(240,232,168,0.15);border-radius:12px;overflow:hidden;margin-top:-18px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,0.4)"></div>
@@ -1208,13 +1196,7 @@
       var isActive = m === selectedCalMonth;
       var cls = 'cal-month-btn' + (isActive ? ' active' : '') + (hasActivity ? ' has-activity' : '');
       var label = m.charAt(0).toUpperCase() + m.slice(1, 3);
-      var emojis = gardenPlants
-        .filter(function(p) { return p.schedule && p.schedule[m] && p.schedule[m].action; })
-        .map(function(p) { return getPlantEmoji(p.common_name); });
-      // Deduplicate emojis
-      var uniqueEmojis = emojis.filter(function(e, i) { return emojis.indexOf(e) === i; }).slice(0, 3);
-      var emojiHtml = uniqueEmojis.length ? '<span style="font-size:11px;display:block;line-height:1;margin-bottom:3px">' + uniqueEmojis.join('') + '</span>' : '';
-      return '<button class="' + cls + '" onclick="selectCalMonth(\x27' + m + '\x27)" style="padding:8px 12px;text-align:center">' + emojiHtml + label + '</button>';
+      return '<button class="' + cls + '" onclick="selectCalMonth(\x27' + m + '\x27)">' + label + '</button>';
     }).join('');
 
     // Scroll active month into view
