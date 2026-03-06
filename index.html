@@ -1322,37 +1322,63 @@
     gardenPlants.push(inserted);
     renderGarden();
 
-    // Fetch schedule from API
+    // Check cache first
     try {
-      var res = await fetch('/api/garden', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plantName: name, seedType: selectedSeedType })
-      });
-      var schedData = await res.json();
-      console.log('Garden API response:', schedData);
-      if (schedData.schedule) {
+      var cached = await sb.from('plant_schedules')
+        .select('plant_type, schedule')
+        .eq('common_name', name)
+        .eq('seed_type', selectedSeedType)
+        .single();
+
+      var schedData = null;
+
+      if (cached.data && cached.data.schedule) {
+        // Cache hit - use stored schedule
+        console.log('Cache hit for', name);
+        schedData = cached.data;
+      } else {
+        // Cache miss - call API
+        console.log('Cache miss for', name, '- calling API');
+        var res = await fetch('/api/garden', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plantName: name, seedType: selectedSeedType })
+        });
+        var apiData = await res.json();
+        if (apiData.schedule) {
+          schedData = apiData;
+          // Save to cache
+          await sb.from('plant_schedules').upsert({
+            common_name: name,
+            seed_type: selectedSeedType,
+            plant_type: apiData.plantType || '',
+            schedule: apiData.schedule
+          }, { onConflict: 'common_name,seed_type' });
+        } else {
+          throw new Error(apiData.error || 'Inget schema returnerades');
+        }
+      }
+
+      if (schedData) {
         await sb.from('garden_plants').update({
-          plant_type: schedData.plantType || '',
+          plant_type: schedData.plant_type || schedData.plantType || '',
           schedule: schedData.schedule
         }).eq('id', inserted.id);
-        inserted.plant_type = schedData.plantType || '';
+        inserted.plant_type = schedData.plant_type || schedData.plantType || '';
         inserted.schedule = schedData.schedule;
         var idx = gardenPlants.findIndex(function(p) { return p.id === inserted.id; });
         if (idx >= 0) gardenPlants[idx] = inserted;
         var cardEl = document.getElementById('gcard-' + inserted.id);
         if (cardEl) cardEl.outerHTML = renderGardenCard(inserted);
-      } else {
-        console.error('No schedule in response:', schedData);
-        var cardEl = document.getElementById('gcard-' + inserted.id);
-        if (cardEl) {
-          inserted.schedule = {};
-          inserted._error = schedData.error || 'Okänt fel';
-          cardEl.outerHTML = renderGardenCard(inserted);
-        }
       }
     } catch(err) {
-      console.error('Garden fetch error:', err);
+      console.error('Garden error:', err);
+      var cardEl = document.getElementById('gcard-' + inserted.id);
+      if (cardEl) {
+        inserted.schedule = {};
+        inserted._error = err.message || 'Okänt fel';
+        cardEl.outerHTML = renderGardenCard(inserted);
+      }
     }
   }
 
