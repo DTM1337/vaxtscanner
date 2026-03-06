@@ -6,10 +6,14 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { plantName, scientificName } = req.body;
+    const { plantName, scientificName, seedType } = req.body;
     if (!plantName) return res.status(400).json({ error: 'plantName saknas' });
 
-    const prompt = `Ge ett odlingsschema for "${plantName}"${scientificName ? ' (' + scientificName + ')' : ''} anpassat for Sverige.
+    const seedContext = seedType === 'fro' ? 'Användaren ska så från frö (inkludera förodling inomhus, tidpunkt för sådd, och utplantering).'
+      : seedType === 'planta' ? 'Användaren ska köpa färdig planta (hoppa över förodlingsfas, fokusera på utplantering och skötsel).'
+      : 'Anpassa schemat optimalt för växten (inkludera förodling om det är vanligt för denna art).';
+
+    const prompt = `Ge ett odlingsschema for "${plantName}"${scientificName ? ' (' + scientificName + ')' : ''} anpassat for Sverige. ${seedContext}
 Svara ENDAST med JSON utan kodblock:
 {
   "plantType": "grönsak|frukt|bär|buske|träd|blomma|krukväxt|perenner",
